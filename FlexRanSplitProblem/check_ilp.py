@@ -173,6 +173,13 @@ def print_model_summary(model: pulp.LpProblem) -> Dict[str, Any]:
         _constraint_family(name)
         for name in model.constraints
     )
+    expected_c2b = len(model._sets["S"]) * len(model._sets["K"])
+    actual_c2b = constraint_counts.get("C2b", 0)
+    if actual_c2b != expected_c2b:
+        raise AssertionError(
+            "Model is missing DRC/path consistency constraints: "
+            f"expected {expected_c2b} C2b constraints, found {actual_c2b}"
+        )
     summary = {
         "name": model.name,
         "variables": len(model.variables()),

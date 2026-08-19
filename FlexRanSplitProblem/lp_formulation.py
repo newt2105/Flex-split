@@ -145,14 +145,15 @@ def formulateLp(
             f"C2_path_selection_{s}",
         )
 
-    # # C2b: selected path and selected DRC must describe the same configuration.
-    # for s in S:
-    #     for k in K:
-    #         lp += (
-    #             pulp.lpSum(y[(s, k, p.id)] for p in paths_by_slice[s])
-    #             == pi[(s, k)],
-    #             f"C2b_drc_path_consistency_{s}_{k}",
-    #         )
+    # C2b: selected path and selected DRC must describe the same configuration.
+    # This link is required even though it is omitted from the PDF draft.
+    for s in S:
+        for k in K:
+            lp += (
+                pulp.lpSum(y[(s, k, p.id)] for p in paths_by_slice[s])
+                == pi[(s, k)],
+                f"C2b_drc_path_consistency_{s}_{k}",
+            )
 
     # C3 / (6): the UPF and RU are fixed at the path endpoints.
     for s in S:
