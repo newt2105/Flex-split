@@ -86,7 +86,14 @@ def formulateLp(
     # ------------------------------------------------------------------
     # Binary variables, equations (3a)-(3c) and the additional pi_tilde.
     # ------------------------------------------------------------------
-    pi_tilde = pulp.LpVariable.dicts("pi_tilde", K, cat=pulp.LpBinary)
+    # Do not pass tuple(K) directly to LpVariable.dicts(): PuLP interprets a
+    # tuple as a declaration of nested index dimensions.  With integer DRC
+    # IDs that makes it try to iterate over K[0], raising
+    # ``TypeError: 'int' object is not iterable``.
+    pi_tilde = {
+        k: pulp.LpVariable(f"pi_tilde_{k}", cat=pulp.LpBinary)
+        for k in K
+    }
 
     pi_keys = [(s, k) for s in S for k in K]
     pi = pulp.LpVariable.dicts("pi", pi_keys, cat=pulp.LpBinary)
