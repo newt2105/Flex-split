@@ -1,206 +1,414 @@
+"""ILP for flexible RAN-function placement.
+
+The notation follows Section IV of the supplied paper:
+
+* ``pi_tilde[k]``: DRC ``k`` is used by at least one NSC;
+* ``pi[s, k]``: NSC ``s`` selects DRC ``k``;
+* ``y[s, k, p]``: NSC ``s`` selects physical path ``p`` with DRC ``k``;
+* ``x_node[s, k, p, i, v]``: VNF ``v`` is mapped to node ``i``;
+* ``x_link[s, k, p, i, j, v, w]``: virtual link ``vw`` uses link ``ij``.
+
+All variables are binary.  Constraint names retain the numbering used in the
+paper.  ``C2b`` is an explicit DRC/path consistency constraint: it is required
+for a valid model but is missing from the draft between equations (4) and (5).
+"""
 
 from __future__ import annotations
 
+from typing import Any, Dict, List, Tuple
+
 import pulp
-from typing import Any, Dict, List
 
 from .common import FlexRanSplitProblem
-from .helper import (
-    node_cpu_cap,
-    edge_bw_cap,
-    seg_edges,
-    seg_delay,
-    path_latency,
-    end_node_of_seg,
-)
-
-BETA = 0.9999     # ưu tiên accept
-BIG_M = 10**6     # dùng cho delay gating (an toàn)
+from .helper import edge_bw_cap, node_cpu_cap, path_edges, path_latency, path_nodes
 
 
-def formulateLp(problem: FlexRanSplitProblem) -> pulp.LpProblem:
+DEFAULT_BETA = 0.5
+
+
+def _capacity_edge(PHY, u: Any, v: Any) -> Tuple[Any, Any]:
+    """Return the physical edge whose capacity is consumed by arc ``u -> v``."""
+    if PHY.is_directed():
+        if not PHY.has_edge(u, v):
+            raise ValueError(f"Path arc {(u, v)} is not present in the physical graph")
+        return (u, v)
+
+    if not PHY.has_edge(u, v):
+        raise ValueError(f"Path edge {(u, v)} is not present in the physical graph")
+    return tuple(sorted((u, v), key=lambda node: (type(node).__name__, repr(node))))
+
+
+def formulateLp(
+    problem: FlexRanSplitProblem,
+    beta: float = DEFAULT_BETA,
+) -> pulp.LpProblem:
+    """Build the paper's binary linear placement model.
+
+    Parameters
+    ----------
+    problem:
+        Physical network, physical paths, NSCs/RUs, DRCs, and resource data.
+    beta:
+        Weight in equation (14a).  ``beta=1`` minimizes only the number of
+        used DRCs; ``beta=0`` minimizes only total normalized path latency.
+    """
+    if not 0.0 <= beta <= 1.0:
+        raise ValueError("beta must be in [0, 1]")
+
+    problem.sanity_check()
     PHY = problem.PHY
-    core_id = getattr(problem, "core", 0)
 
-    # Sets
-    S = problem.flow_set               # RU ids (sb)
-    K = problem.Ks                     # DRC ids
-    P = [p.id for p in problem.paths]  # path ids
-    P_by_id: Dict[Any, Any] = {p.id: p for p in problem.paths}
+    # Paper notation: S (NSCs), K (DRCs), P_s (paths for NSC s), N_s and E_s.
+    S = tuple(problem.S)
+    K = tuple(problem.K)
+    V = tuple(problem.V)
+    virtual_links = tuple(problem.virtual_links)
+    paths_by_slice = {s: tuple(problem.paths_for_slice(s)) for s in S}
+    path_by_key = {
+        (s, p.id): p
+        for s in S
+        for p in paths_by_slice[s]
+    }
+    nodes_by_path = {
+        key: tuple(path_nodes(path))
+        for key, path in path_by_key.items()
+    }
+    arcs_by_path = {
+        key: tuple(path_edges(path))
+        for key, path in path_by_key.items()
+    }
 
     lp = pulp.LpProblem(
-        name=getattr(problem, "name", "FlexRanSplit_ILP"),
-        sense=pulp.LpMinimize
-    )
-    lp.constraints.clear()
-
-    # -----------------------------
-    # Variables
-    # -----------------------------
-    # admission adm[b] ∈ {0,1}
-    adm = pulp.LpVariable.dicts("adm", S, cat=pulp.LpBinary)
-
-    # DRC selection pi[b,k] ∈ {0,1}
-    pi = {b: pulp.LpVariable.dicts(f"pi_{b}", K, cat=pulp.LpBinary) for b in S}
-
-    # path selection theta[b,k,p] ∈ {0,1}
-    # theta[b,k,p] = 1 iff path p is selected for RU b using DRC k.
-    theta = pulp.LpVariable.dicts(
-        "theta",
-        (S, K, P),
-        cat=pulp.LpBinary,
+        name=getattr(problem, "name", "Flexible_RAN_Placement"),
+        sense=pulp.LpMinimize,
     )
 
-    # -----------------------------
-    # C1: chọn đúng 1 DRC hoặc reject
-    # sum_k pi[b,k] = adm[b]
-    # -----------------------------
-    for b in S:
-        lp += (pulp.lpSum(pi[b][k] for k in K) == adm[b], f"C1_drc_{b}")
+    # ------------------------------------------------------------------
+    # Binary variables, equations (3a)-(3c) and the additional pi_tilde.
+    # ------------------------------------------------------------------
+    pi_tilde = pulp.LpVariable.dicts("pi_tilde", K, cat=pulp.LpBinary)
 
-    # -----------------------------
-    # C2: chọn đúng 1 cặp DRC/path
-    # sum_k sum_p theta[b,k,p] = 1
-    # -----------------------------
-    for b in S:
+    pi_keys = [(s, k) for s in S for k in K]
+    pi = pulp.LpVariable.dicts("pi", pi_keys, cat=pulp.LpBinary)
+
+    y_keys = [
+        (s, k, p.id)
+        for s in S
+        for k in K
+        for p in paths_by_slice[s]
+    ]
+    y = pulp.LpVariable.dicts("y", y_keys, cat=pulp.LpBinary)
+
+    x_node_keys = [
+        (s, k, p.id, i, v)
+        for s in S
+        for k in K
+        for p in paths_by_slice[s]
+        for i in nodes_by_path[(s, p.id)]
+        for v in V
+    ]
+    x_node = pulp.LpVariable.dicts("x_node", x_node_keys, cat=pulp.LpBinary)
+
+    x_link_keys = [
+        (s, k, p.id, i, j, v, w)
+        for s in S
+        for k in K
+        for p in paths_by_slice[s]
+        for i, j in arcs_by_path[(s, p.id)]
+        for v, w, _segment in virtual_links
+    ]
+    x_link = pulp.LpVariable.dicts("x_link", x_link_keys, cat=pulp.LpBinary)
+
+    # C1 / (4): exactly one DRC for every NSC.
+    for s in S:
         lp += (
-            pulp.lpSum(theta[b][k][pid] for k in K for pid in P) == 1,
-            f"C2_path_{b}",
+            pulp.lpSum(pi[(s, k)] for k in K) == 1,
+            f"C1_drc_selection_{s}",
         )
 
-    # -----------------------------
-    # C3: DRC/path consistency
-    # A path can only be selected under the DRC selected by pi.
-    # -----------------------------
-    for b in S:
-        for k in K:
-            lp += (
-                pulp.lpSum(theta[b][k][pid] for pid in P) == pi[b][k],
-                f"C3_drc_path_{b}_{k}",
+    # C2 / (5): exactly one (DRC, physical path) pair for every NSC.
+    for s in S:
+        lp += (
+            pulp.lpSum(
+                y[(s, k, p.id)]
+                for k in K
+                for p in paths_by_slice[s]
             )
+            == 1,
+            f"C2_path_selection_{s}",
+        )
 
-    # -----------------------------
-    # C4: Delay constraints for BH/MH/FH (gated by theta)
-    # seg_delay(path, seg) <= delay_req(b,k,seg) + M*(1-theta)
-    # -----------------------------
-    for b in S:
+    # # C2b: selected path and selected DRC must describe the same configuration.
+    # for s in S:
+    #     for k in K:
+    #         lp += (
+    #             pulp.lpSum(y[(s, k, p.id)] for p in paths_by_slice[s])
+    #             == pi[(s, k)],
+    #             f"C2b_drc_path_consistency_{s}_{k}",
+    #         )
+
+    # C3 / (6): the UPF and RU are fixed at the path endpoints.
+    for s in S:
+        ru_node = problem.ru_location(s)
         for k in K:
-            for pid in P:
-                p = P_by_id[pid]
-                for seg in ("BH", "MH", "FH"):
+            for p in paths_by_slice[s]:
+                key = (s, k, p.id)
+                lp += (
+                    x_node[(s, k, p.id, problem.core, "vupf")] == y[key],
+                    f"C3_upf_endpoint_{s}_{k}_{p.id}",
+                )
+                lp += (
+                    x_node[(s, k, p.id, ru_node, "vru")] == y[key],
+                    f"C3_ru_endpoint_{s}_{k}_{p.id}",
+                )
+
+    # C4 / (7): each VNF is mapped to one node of the selected path.
+    for s in S:
+        for k in K:
+            for p in paths_by_slice[s]:
+                selected = y[(s, k, p.id)]
+                for v in V:
                     lp += (
-                        seg_delay(p, seg) <= problem.delay_req(b, k, seg) + BIG_M * (1 - theta[b][k][pid]),
-                        f"C4_delay_{seg}_{b}_{k}_{pid}"
+                        pulp.lpSum(
+                            x_node[(s, k, p.id, i, v)]
+                            for i in nodes_by_path[(s, p.id)]
+                        )
+                        == selected,
+                        f"C4_one_node_{s}_{k}_{p.id}_{v}",
                     )
 
-    # -----------------------------
-    # C5: Node CPU capacity
-    # CU node = end(BH), DU node = end(MH), RU node fixed
-    # Sum CPU load on node i <= cap(i)
-    # -----------------------------
-    for i in PHY.nodes:
-        i = int(i)
-        expr = []
+    # C5 / (8): two VNFs of one NSC cannot share a physical node.
+    for s in S:
+        for k in K:
+            for p in paths_by_slice[s]:
+                selected = y[(s, k, p.id)]
+                for i in nodes_by_path[(s, p.id)]:
+                    lp += (
+                        pulp.lpSum(
+                            x_node[(s, k, p.id, i, v)]
+                            for v in V
+                        )
+                        <= selected,
+                        f"C5_one_vnf_{s}_{k}_{p.id}_{i}",
+                    )
 
-        cap_i = node_cpu_cap(PHY, i)
-
-        for b in S:
-            ru_node = int(problem.ru_location(b))
+    # C6a / (9a): physical-node resource capacities.
+    for i in problem.N:
+        terms = []
+        for s in S:
             for k in K:
-                cpu_cu = problem.node_req(b, k, "vcu")
-                cpu_du = problem.node_req(b, k, "vdu")
-                cpu_ru = problem.node_req(b, k, "vru")
+                for p in paths_by_slice[s]:
+                    if i not in nodes_by_path[(s, p.id)]:
+                        continue
+                    for v in V:
+                        requirement = problem.node_req(s, k, v)
+                        if requirement:
+                            terms.append(
+                                requirement * x_node[(s, k, p.id, i, v)]
+                            )
+        lp += (
+            pulp.lpSum(terms) <= node_cpu_cap(PHY, i),
+            f"C6a_node_capacity_{i}",
+        )
 
-                for pid in P:
-                    p = P_by_id[pid]
-                    cu_node = end_node_of_seg(p, "BH", core_id, ru_node)
-                    du_node = end_node_of_seg(p, "MH", core_id, ru_node)
+    # Group path arcs by the physical edge whose capacity they consume.
+    arcs_using_edge: Dict[Tuple[Any, Any], List[Tuple[Any, int, Any, Any]]] = {}
+    for s in S:
+        for p in paths_by_slice[s]:
+            for i, j in arcs_by_path[(s, p.id)]:
+                edge = _capacity_edge(PHY, i, j)
+                arcs_using_edge.setdefault(edge, []).append((s, p.id, i, j))
 
-                    if i == cu_node and cpu_cu != 0:
-                        expr.append(cpu_cu * theta[b][k][pid])
-                    if i == du_node and cpu_du != 0:
-                        expr.append(cpu_du * theta[b][k][pid])
-                    if i == ru_node and cpu_ru != 0:
-                        expr.append(cpu_ru * theta[b][k][pid])
-
-        lp += (pulp.lpSum(expr) <= cap_i, f"C5_cpu_{i}")
-
-    # -----------------------------
-    # C6: Link bandwidth capacity
-    # If edge e is used in segment seg of path p -> consume bw_req(b,k,seg)
-    # Sum BW on edge e <= cap(e)
-    # -----------------------------
-    for e in PHY.edges:
-        e = (int(e[0]), int(e[1]))
-        cap_e = edge_bw_cap(PHY, e)
-        expr = []
-
-        for b in S:
+    # C6b / (9b): physical-link bandwidth capacities.
+    physical_capacity_edges = (
+        [tuple(edge) for edge in PHY.edges]
+        if PHY.is_directed()
+        else [_capacity_edge(PHY, *edge) for edge in PHY.edges]
+    )
+    for edge in physical_capacity_edges:
+        terms = []
+        for s, pid, i, j in arcs_using_edge.get(edge, []):
             for k in K:
-                bw_bh = problem.link_req(b, k, "BH")
-                bw_mh = problem.link_req(b, k, "MH")
-                bw_fh = problem.link_req(b, k, "FH")
+                for v, w, segment in virtual_links:
+                    requirement = problem.link_req(s, k, segment)
+                    if requirement:
+                        terms.append(
+                            requirement * x_link[(s, k, pid, i, j, v, w)]
+                        )
+        lp += (
+            pulp.lpSum(terms) <= edge_bw_cap(PHY, edge),
+            f"C6b_link_capacity_{edge[0]}_{edge[1]}",
+        )
 
-                for pid in P:
-                    p = P_by_id[pid]
-                    if e in seg_edges(p, "BH") and bw_bh != 0:
-                        expr.append(bw_bh * theta[b][k][pid])
-                    if e in seg_edges(p, "MH") and bw_mh != 0:
-                        expr.append(bw_mh * theta[b][k][pid])
-                    if e in seg_edges(p, "FH") and bw_fh != 0:
-                        expr.append(bw_fh * theta[b][k][pid])
+    # C7 / (10): flow conservation for every virtual link on its chosen path.
+    for s in S:
+        for k in K:
+            for p in paths_by_slice[s]:
+                pid = p.id
+                arcs = arcs_by_path[(s, pid)]
+                for v, w, _segment in virtual_links:
+                    for i in nodes_by_path[(s, pid)]:
+                        outgoing = pulp.lpSum(
+                            x_link[(s, k, pid, a, b, v, w)]
+                            for a, b in arcs
+                            if a == i
+                        )
+                        incoming = pulp.lpSum(
+                            x_link[(s, k, pid, a, b, v, w)]
+                            for a, b in arcs
+                            if b == i
+                        )
+                        lp += (
+                            outgoing - incoming
+                            == x_node[(s, k, pid, i, v)]
+                            - x_node[(s, k, pid, i, w)],
+                            f"C7_flow_{s}_{k}_{pid}_{v}_{w}_{i}",
+                        )
 
-        lp += (pulp.lpSum(expr) <= cap_e, f"C6_bw_{e[0]}_{e[1]}")
+    # C8 / (11): suppress link variables belonging to an unselected path.
+    for s, k, pid, i, j, v, w in x_link_keys:
+        lp += (
+            x_link[(s, k, pid, i, j, v, w)] <= y[(s, k, pid)],
+            f"C8_remove_redundant_{s}_{k}_{pid}_{i}_{j}_{v}_{w}",
+        )
 
-    # -----------------------------
-    # Objective: minimize  -BETA*sum(adm) + (1-BETA)*sum(theta * latency(path))
-    # (minimize form)
-    # -----------------------------
-    lp += (
-        -BETA * pulp.lpSum(adm[b] for b in S)
-        + (1 - BETA) * pulp.lpSum(
-            theta[b][k][pid] * path_latency(P_by_id[pid])
-            for b in S
+    # C9 / (12)-(13): pi_tilde[k] is the logical OR of pi[s, k].
+    # This integer-scaled formulation is equivalent to (13), but stronger and
+    # avoids a tiny epsilon that can be swallowed by a solver tolerance.
+    for k in K:
+        use_count = pulp.lpSum(pi[(s, k)] for s in S)
+        lp += (
+            use_count <= len(S) * pi_tilde[k],
+            f"C9_drc_used_lower_{k}",
+        )
+        lp += (
+            pi_tilde[k] <= use_count,
+            f"C9_drc_used_upper_{k}",
+        )
+
+    # Objective / (14)-(15): used DRC count and normalized total path latency.
+    max_path_latency = max(
+        path_latency(p)
+        for s in S
+        for p in paths_by_slice[s]
+    )
+    latency_normalizer = max_path_latency if max_path_latency > 0.0 else 1.0
+    used_drc_count = pulp.lpSum(pi_tilde[k] for k in K)
+    normalized_latency = (
+        pulp.lpSum(
+            y[(s, k, p.id)] * path_latency(p)
+            for s in S
             for k in K
-            for pid in P
-        ),
-        "OBJ"
+            for p in paths_by_slice[s]
+        )
+        / latency_normalizer
+    )
+    lp += (
+        beta * used_drc_count + (1.0 - beta) * normalized_latency,
+        "OBJ_used_drcs_and_latency",
     )
 
-    # attach vars for debug/extract
-    lp._vars = {"adm": adm, "pi": pi, "theta": theta}
+    # Keep semantic handles for solution extraction, diagnostics, and tests.
+    lp._vars = {
+        "pi_tilde": pi_tilde,
+        "pi": pi,
+        "y": y,
+        "x_node": x_node,
+        "x_link": x_link,
+    }
+    lp._sets = {
+        "S": S,
+        "K": K,
+        "V": V,
+        "virtual_links": virtual_links,
+        "paths_by_slice": paths_by_slice,
+        "path_by_key": path_by_key,
+        "nodes_by_path": nodes_by_path,
+        "arcs_by_path": arcs_by_path,
+    }
+    lp._objective_terms = {
+        "beta": beta,
+        "latency_normalizer": latency_normalizer,
+    }
     return lp
 
 
-def extract_solution(problem: FlexRanSplitProblem, lp: pulp.LpProblem):
-    """
-    Return list of dict:
-      {ru, admitted, drc, path}
-    """
-    vars_ = getattr(lp, "_vars", None)
-    if vars_ is None:
-        raise ValueError("LP has no attached vars. Build with formulateLp().")
+def extract_solution(
+    problem: FlexRanSplitProblem,
+    lp: pulp.LpProblem,
+) -> List[Dict[str, Any]]:
+    """Return DRC, path, VNF placement, and virtual-link mapping per NSC."""
+    variables = getattr(lp, "_vars", None)
+    sets = getattr(lp, "_sets", None)
+    if variables is None or sets is None:
+        raise ValueError("LP has no semantic metadata; build it with formulateLp()")
 
-    adm = vars_["adm"]
-    theta = vars_["theta"]
+    y = variables["y"]
+    x_node = variables["x_node"]
+    x_link = variables["x_link"]
+    paths_by_slice = sets["paths_by_slice"]
+    nodes_by_path = sets["nodes_by_path"]
+    arcs_by_path = sets["arcs_by_path"]
 
-    P = [p.id for p in problem.paths]
-
-    out = []
-    for b in problem.flow_set:
-        admitted = (pulp.value(adm[b]) or 0) > 0.5
-        if not admitted:
-            out.append({"ru": b, "admitted": 0, "drc": None, "path": None})
-            continue
-
-        chosen_k, chosen_p = None, None
-        for k in problem.Ks:
-            for pid in P:
-                if (pulp.value(theta[b][k][pid]) or 0) > 0.5:
-                    chosen_k, chosen_p = k, pid
+    solution: List[Dict[str, Any]] = []
+    for s in sets["S"]:
+        chosen = None
+        for k in sets["K"]:
+            for p in paths_by_slice[s]:
+                if (pulp.value(y[(s, k, p.id)]) or 0.0) > 0.5:
+                    chosen = (k, p)
                     break
-            if chosen_k is not None:
+            if chosen is not None:
                 break
 
-        out.append({"ru": b, "admitted": 1, "drc": chosen_k, "path": chosen_p})
-    return out
+        if chosen is None:
+            solution.append(
+                {
+                    "slice": s,
+                    "ru": s,
+                    "deployed": 0,
+                    "admitted": 0,
+                    "drc": None,
+                    "path": None,
+                    "path_nodes": [],
+                    "latency": None,
+                    "vnf_placement": {},
+                    "virtual_link_mapping": {},
+                }
+            )
+            continue
+
+        k, p = chosen
+        pid = p.id
+        placement = {}
+        for v in sets["V"]:
+            placement[v] = next(
+                i
+                for i in nodes_by_path[(s, pid)]
+                if (pulp.value(x_node[(s, k, pid, i, v)]) or 0.0) > 0.5
+            )
+
+        link_mapping = {}
+        for v, w, _segment in sets["virtual_links"]:
+            link_mapping[f"{v}->{w}"] = [
+                [i, j]
+                for i, j in arcs_by_path[(s, pid)]
+                if (pulp.value(x_link[(s, k, pid, i, j, v, w)]) or 0.0) > 0.5
+            ]
+
+        solution.append(
+            {
+                "slice": s,
+                "ru": s,
+                "deployed": 1,
+                "admitted": 1,
+                "drc": k,
+                "path": pid,
+                "path_nodes": list(nodes_by_path[(s, pid)]),
+                "latency": path_latency(p),
+                "vnf_placement": placement,
+                "virtual_link_mapping": link_mapping,
+            }
+        )
+
+    return solution

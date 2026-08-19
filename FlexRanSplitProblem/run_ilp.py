@@ -1,115 +1,122 @@
-# run_ilp.py
-import pickle
+"""Command-line runner for the flexible RAN placement ILP."""
+
+from __future__ import annotations
+
+import argparse
 import json
-from pathlib import Path
+import pickle
+import time
 from datetime import datetime
+from pathlib import Path
 
 import pulp
 
 from .common import FlexRanSplitProblem
-from .lp_formulation import formulateLp, extract_solution
-from .phy.ran_model import (
-    DRC_structure_T2,
-    build_rus_from_nodes_json_T2,
-)
-
-# =========================
-# Paths / Topology config
-# =========================
-LINKS_JSON = "/home/stu1/Code/flexransplit/FlexRanSplitProblem/model_files/T2_files/8_CRs_links_LC.json"
-NODES_JSON = "/home/stu1/Code/flexransplit/FlexRanSplitProblem/model_files/T2_files/F1_8_CRs_nodes_LC.json"
-PATHS_PKL  = "/home/stu1/Code/flexransplit/FlexRanSplitProblem/phy/paths.pkl"
-PHY_PKL    = "/home/stu1/Code/flexransplit/FlexRanSplitProblem/phy/phy.pkl"
-CORE_ID = 0
-
-# =========================
-# Results directory
-# =========================
-RESULTS_DIR = Path("/home/stu1/Code/flexransplit/FlexRanSplitProblem/results")
-RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+from .lp_formulation import DEFAULT_BETA, extract_solution, formulateLp
+from .phy.ran_model import DRC_structure_T2, build_rus_from_nodes_json_T2
 
 
-def save_sol(lp: pulp.LpProblem, filepath: Path):
-    """
-    Save raw ILP solution in Gurobi-like .sol format
-    """
-    with open(filepath, "w") as f:
-        f.write(f"# Solution for model {lp.name}\n")
-        f.write(f"# Objective value = {pulp.value(lp.objective)}\n")
-        for v in lp.variables():
-            if v.varValue is not None and abs(v.varValue) > 1e-6:
-                f.write(f"{v.name} {v.varValue}\n")
+PACKAGE_DIR = Path(__file__).resolve().parent
+DEFAULT_NODES = PACKAGE_DIR / "model_files" / "T2_files" / "F1_8_CRs_nodes_LC.json"
+DEFAULT_PATHS = PACKAGE_DIR / "phy" / "paths.pkl"
+DEFAULT_PHY = PACKAGE_DIR / "phy" / "phy.pkl"
+DEFAULT_RESULTS = PACKAGE_DIR / "results"
 
 
-def main():
-    print("[1] Building physical network...")
-    with open(PHY_PKL, "rb") as f:
-        PHY = pickle.load(f)
+def save_sol(lp: pulp.LpProblem, filepath: Path) -> None:
+    """Save nonzero raw decision-variable values in a readable text format."""
+    with filepath.open("w", encoding="utf-8") as stream:
+        stream.write(f"# Solution for model {lp.name}\n")
+        stream.write(f"# Objective value = {pulp.value(lp.objective)}\n")
+        for variable in lp.variables():
+            if variable.varValue is not None and abs(variable.varValue) > 1e-6:
+                stream.write(f"{variable.name} {variable.varValue}\n")
 
-    print("[2] Loading paths...")
-    with open(PATHS_PKL, "rb") as f:
-        paths = pickle.load(f)
-    print(f"    Loaded {len(paths)} paths")
 
-    print("[3] Loading RUs...")
-    rus = build_rus_from_nodes_json_T2(NODES_JSON)
-    print(f"    Loaded {len(rus)} RUs")
+def build_solver(name: str, msg: bool) -> pulp.LpSolver:
+    if name == "cbc":
+        return pulp.PULP_CBC_CMD(msg=msg)
+    if name == "gurobi":
+        return pulp.GUROBI_CMD(msg=msg)
 
-    print("[4] Loading DRCs...")
-    drcs = DRC_structure_T2()
-    print(f"    Loaded {len(drcs)} DRCs")
+    available = set(pulp.listSolvers(onlyAvailable=True))
+    if "GUROBI_CMD" in available:
+        return pulp.GUROBI_CMD(msg=msg)
+    return pulp.PULP_CBC_CMD(msg=msg)
 
-    print("[5] Building FlexRanSplitProblem...")
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Solve the flexible RAN placement ILP")
+    parser.add_argument("--nodes", type=Path, default=DEFAULT_NODES)
+    parser.add_argument("--paths", type=Path, default=DEFAULT_PATHS)
+    parser.add_argument("--phy", type=Path, default=DEFAULT_PHY)
+    parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
+    parser.add_argument("--core", type=int, default=0)
+    parser.add_argument("--beta", type=float, default=DEFAULT_BETA)
+    parser.add_argument("--solver", choices=("auto", "cbc", "gurobi"), default="auto")
+    parser.add_argument("--solver-log", action="store_true")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    args.results.mkdir(parents=True, exist_ok=True)
+
+    with args.phy.open("rb") as stream:
+        physical_network = pickle.load(stream)
+    with args.paths.open("rb") as stream:
+        paths = pickle.load(stream)
+
     problem = FlexRanSplitProblem(
-        physical_network=PHY,
+        physical_network=physical_network,
         paths=paths,
-        rus=rus,
-        drcs=drcs,
-        core_id=CORE_ID,
-        name="FlexRAN_ILP_T2",
+        rus=build_rus_from_nodes_json_T2(str(args.nodes)),
+        drcs=DRC_structure_T2(),
+        core_id=args.core,
+        name="Flexible_RAN_Placement",
     )
-    problem.sanity_check()
 
-    print("[6] Formulating ILP...")
-    lp = formulateLp(problem)
+    model = formulateLp(problem, beta=args.beta)
+    solver = build_solver(args.solver, args.solver_log)
 
-    print("[7] Solving ILP (Gurobi, silent)...")
-    solver = pulp.GUROBI_CMD(msg=False)
-    lp.solve(solver)
+    started = time.perf_counter()
+    model.solve(solver)
+    problem.solver_time = time.perf_counter() - started
+    problem.solution_status = model.status
 
-    status = pulp.LpStatus[lp.status]
-    print(f"[8] Solver status: {status}")
-
+    status = pulp.LpStatus[model.status]
+    print(f"Solver status: {status}")
+    print(f"Solve time: {problem.solver_time:.3f} s")
     if status != "Optimal":
-        print("[!] Warning: solution is not optimal")
+        raise RuntimeError(f"The ILP did not reach an optimal solution: {status}")
 
-    print("[9] Extracting semantic solution...")
-    solution = extract_solution(problem, lp)
+    solution = extract_solution(problem, model)
+    problem.solution = {
+        "objective": pulp.value(model.objective),
+        "beta": args.beta,
+        "slices": solution,
+    }
+    problem.status = 1
 
-    # =========================
-    # Save results
-    # =========================
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    semantic_path = args.results / f"solution_{timestamp}.json"
+    raw_path = args.results / f"solution_{timestamp}.sol"
+    snapshot_path = args.results / f"problem_{timestamp}.pkl.gz"
 
-    # --- semantic solution (JSON)
-    sol_json = RESULTS_DIR / f"solution_{ts}.json"
-    with open(sol_json, "w") as f:
-        json.dump(solution, f, indent=2)
-    print(f"[10] Semantic solution saved to {sol_json}")
+    with semantic_path.open("w", encoding="utf-8") as stream:
+        json.dump(problem.solution, stream, indent=2)
+    save_sol(model, raw_path)
+    FlexRanSplitProblem.saveToFile(str(snapshot_path), problem)
 
-    # --- raw solver solution (.sol)
-    sol_txt = RESULTS_DIR / f"solution_{ts}.sol"
-    save_sol(lp, sol_txt)
-    print(f"[11] Raw solver solution saved to {sol_txt}")
-
-    # --- snapshot of full problem
-    snapshot_file = RESULTS_DIR / f"problem_{ts}.pkl.gz"
-    FlexRanSplitProblem.saveToFile(str(snapshot_file), problem)
-    print(f"[12] Problem snapshot saved to {snapshot_file}")
-
-    print("\n===== FINAL SOLUTION (SUMMARY) =====")
-    for s in solution:
-        print(s)
+    print(f"Objective: {pulp.value(model.objective):.6f}")
+    print(f"Semantic solution: {semantic_path}")
+    print(f"Raw variables: {raw_path}")
+    print(f"Problem snapshot: {snapshot_path}")
+    for item in solution:
+        print(
+            f"NSC {item['slice']}: DRC={item['drc']}, path={item['path']}, "
+            f"placement={item['vnf_placement']}"
+        )
 
 
 if __name__ == "__main__":
