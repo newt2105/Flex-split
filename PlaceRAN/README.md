@@ -6,6 +6,7 @@ This repository aims to demonstrate the **PlaceRAN: optimal placement of virtual
 - [Description](#description)
 - [Topologies](#topologies)
 - [Scenarios](#scenarios)
+- [Running with PuLP/CBC](#running-with-pulpcbc)
 - [Final Results](#final-results)
 - [Citation](#citation)
 
@@ -31,6 +32,20 @@ The T2 topology is a hierarchical topology, that are organized in layers, this k
 To evaluate our goals with different scenarios of topologies and radio distribution, we defined three types of topology scenarios named as High Capacity (HC), Random Capacity (RC) and Low Capacity (LC). The HC scenario have high quality links with higher bandwidth and lower latency values. The LC scenario is the opposite, links with lower bandwidth and higher latency values. Finally, the RC scenario is the middle ground between the HC and LC scenarios, with links having higher and lower bandwidth and latency values.
 
 We also define different scenarios to the Radio Units (RUs) distribution named as Fixed 1 (F1) and Random 1 (R1). In the F1 scenario, each CR has a RU coupled to it. In the R1 scenario, we define the RU distribution randomly, where each CR can have one RU coupled to it or none.
+
+## Running with PuLP/CBC
+
+The original three-stage PlaceRAN formulation can also be solved with the
+open-source CBC backend. This preserves the PlaceRAN objectives and input data;
+only the modeling/solver backend changes.
+
+```bash
+python -m pip install -r requirements-pulp.txt
+python ./run_model_pulp.py
+```
+
+Use `--solver-log` to display CBC's log. The final RU/path/DRC placement is
+printed to the terminal and saved as JSON under `results_pulp/`.
 
 ## Final results
 

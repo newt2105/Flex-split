@@ -1,7 +1,11 @@
 import time
 import json
-from docplex.mp.model import Model
-from docplex.util.environment import get_environment
+
+try:
+    from docplex.mp.model import Model
+except ModuleNotFoundError:
+    # Keep the topology/data helpers importable by the PuLP implementation.
+    Model = None
 
 
 class Path:
@@ -541,6 +545,8 @@ def run_stage_3(FO_Stage_1, FO_Stage_2):
 
 
 if __name__ == '__main__':
+    if Model is None:
+        raise SystemExit("DOcplex is required for model.py; use model_pulp.py for the PuLP/CBC backend.")
     start_all = time.time()
     FO_Stage_1 = run_stage_1()
     FO_Stage_2 = run_stage_2(FO_Stage_1)
