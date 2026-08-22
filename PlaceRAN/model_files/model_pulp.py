@@ -25,11 +25,18 @@ DRC_PRIORITY = {1: 4, 2: 1, 4: 6, 5: 5, 6: 10, 7: 9, 8: 25, 9: 7, 10: 8}
 PLACE_RAN_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_RESULTS_DIR = PLACE_RAN_DIR / "results_pulp"
 EPSILON = 1e-9
+NETWORK_CHOICES = ("t2-8", "t2-16", "t2-32", "t2-64", "t2-128", "t2-256")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Solve the original three-stage PlaceRAN model with PuLP/CBC"
+    )
+    parser.add_argument(
+        "--network",
+        choices=NETWORK_CHOICES,
+        default="t2-8",
+        help="T2/F1/LC network instance (default: t2-8)",
     )
     parser.add_argument("--solver-log", action="store_true", help="Show the CBC solver log")
     parser.add_argument("--time-limit", type=float, default=None, help="Per-stage time limit in seconds")
@@ -38,15 +45,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_scenario():
-    """Load the same default scenario as model.py: T2/F1/8 CRs/LC."""
+def load_scenario(network: str):
+    """Load one of the bundled T2/F1/LC network instances."""
+    network_size = int(network.rsplit("-", 1)[1])
     placeran.links.clear()
     placeran.capacity.clear()
     placeran.delay.clear()
     placeran.crs.clear()
     placeran.paths.clear()
-    placeran.read_topology_T2()
-    return placeran.DRC_structure_T2(), placeran.RU_location_T2()
+    placeran.read_topology_T2(network_size)
+    return placeran.DRC_structure_T2(), placeran.RU_location_T2(network_size)
 
 
 def path_matches_drc(path, drc) -> bool:
@@ -67,13 +75,17 @@ def path_matches_drc(path, drc) -> bool:
 def candidate_assignments(drcs, rus) -> List[Assignment]:
     """Return only variables that can satisfy the original zero/one rules."""
     candidates = []
+    rus_by_cr = {}
+    for ru_id, ru in rus.items():
+        rus_by_cr.setdefault(ru.CR, []).append(ru_id)
     for path_id, path in placeran.paths.items():
         for drc_id, drc in drcs.items():
             if not path_matches_drc(path, drc):
                 continue
-            for ru_id, ru in rus.items():
-                if path.target == ru.CR and path.seq[2] == ru.CR:
-                    candidates.append((path_id, drc_id, ru_id))
+            if path.seq[2] != path.target:
+                continue
+            for ru_id in rus_by_cr.get(path.target, ()):
+                candidates.append((path_id, drc_id, ru_id))
     return candidates
 
 
@@ -332,7 +344,7 @@ def print_detailed_solution(records: Sequence[Mapping[str, object]]) -> None:
 def main() -> None:
     args = parse_args()
     total_started = time.perf_counter()
-    drcs, rus = load_scenario()
+    drcs, rus = load_scenario(args.network)
     candidates = candidate_assignments(drcs, rus)
     print(f"{len(candidates)} feasible path/DRC/RU assignments generated")
 
@@ -373,11 +385,11 @@ def main() -> None:
         results_dir = args.results.expanduser().resolve()
         results_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result_path = results_dir / f"placeran_pulp_{timestamp}.json"
+        result_path = results_dir / f"placeran_pulp_{args.network}_{timestamp}.json"
         payload = {
             "method": "PlaceRAN",
             "backend": "PuLP/CBC",
-            "scenario": "T2_F1_8_CRs_LC",
+            "scenario": args.network,
             "stage_1": {key: value for key, value in stage_1.items() if key != "selected"},
             "stage_2": {key: value for key, value in stage_2.items() if key != "selected"},
             "stage_3": {key: value for key, value in stage_3.items() if key != "selected"},

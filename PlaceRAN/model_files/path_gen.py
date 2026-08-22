@@ -1,6 +1,23 @@
 from collections import defaultdict
+import argparse
 import json
 import ast
+
+NETWORK_CHOICES = ("t2-8", "t2-16", "t2-32", "t2-64", "t2-128", "t2-256")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate PlaceRAN paths")
+    parser.add_argument("--network", choices=NETWORK_CHOICES, default="t2-8")
+    # run_model_pulp.py forwards model options too; path generation only needs
+    # to consume --network and deliberately ignores the remaining arguments.
+    return parser.parse_known_args()[0]
+
+
+args = parse_args()
+network_size = int(args.network.rsplit("-", 1)[1])
+links_file = "model_files/T2_files/{}_CRs_links_LC.json".format(network_size)
+nodes_file = "model_files/T2_files/F1_{}_CRs_nodes_LC.json".format(network_size)
 
 paths = []
 k = 0
@@ -41,7 +58,7 @@ class Graph:
         self.printAllPathsUtil(s, d, visited, path)
 
 
-with open('model_files/T2_files/8_CRs_links_LC.json') as json_file:
+with open(links_file) as json_file:
     data = json.load(json_file)
     g = Graph(600)
     json_links = data["links"]
@@ -58,7 +75,7 @@ with open('model_files/T2_files/8_CRs_links_LC.json') as json_file:
             # ADD THIS CODE FOR T1 TOPOLOGY
             # g.addEdge(source_node, destination_node)
     dst = []
-    with open('model_files/T2_files/F1_8_CRs_nodes_LC.json') as dst_file:
+    with open(nodes_file) as dst_file:
         json_dst = json.load(dst_file)
         nodes = json_dst["nodes"]
         for item in nodes:
@@ -200,5 +217,5 @@ with open('paths.json', 'w') as json_file:
     sum = 0
     for iten in path_data:
         sum += 1
-    print("{} paths configurations successfully found".format(sum))
+    print("{} paths configurations successfully found for {}".format(sum, args.network))
     json.dump(data, json_file, indent=4)

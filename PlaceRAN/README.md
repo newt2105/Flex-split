@@ -44,6 +44,15 @@ python -m pip install -r requirements-pulp.txt
 python ./run_model_pulp.py
 ```
 
+Select a bundled T2/F1/LC network with `--network`:
+
+```bash
+python ./run_model_pulp.py --network t2-16
+```
+
+Available values are `t2-8`, `t2-16`, `t2-32`, `t2-64`, `t2-128`, and
+`t2-256`. The default is `t2-8`.
+
 Use `--solver-log` to display CBC's log. The final RU/path/DRC placement is
 printed to the terminal and saved as JSON under `results_pulp/`.
 

@@ -167,8 +167,10 @@ def read_topology_T1():
                 paths[path_id] = p
 
 
-def read_topology_T2():
-    with open('model_files/T2_files/8_CRs_links_LC.json') as json_file:
+def read_topology_T2(network_size=8):
+    links_file = 'model_files/T2_files/{}_CRs_links_LC.json'.format(network_size)
+    nodes_file = 'model_files/T2_files/F1_{}_CRs_nodes_LC.json'.format(network_size)
+    with open(links_file) as json_file:
         data = json.load(json_file)
         json_links = data["links"]
         for item in json_links:
@@ -183,7 +185,7 @@ def read_topology_T2():
                 capacity[(destination_node, source_node)] = link["capacity"]
                 delay[(destination_node, source_node)] = link["delay"]
                 links.append((destination_node, source_node))
-        with open('model_files/T2_files/F1_8_CRs_nodes_LC.json') as json_file:
+        with open(nodes_file) as json_file:
             data = json.load(json_file)
             json_nodes = data["nodes"]
             for item in json_nodes:
@@ -282,10 +284,11 @@ def RU_location_T1():
     return rus
 
 
-def RU_location_T2():
+def RU_location_T2(network_size=8):
     rus = {}
     count = 1
-    with open('model_files/T2_files/F1_8_CRs_nodes_LC.json') as json_file:
+    nodes_file = 'model_files/T2_files/F1_{}_CRs_nodes_LC.json'.format(network_size)
+    with open(nodes_file) as json_file:
         data = json.load(json_file)
         json_crs = data["nodes"]
         for item in json_crs:

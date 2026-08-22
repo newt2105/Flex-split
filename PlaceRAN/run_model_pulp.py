@@ -12,7 +12,11 @@ PLACE_RAN_DIR = Path(__file__).resolve().parent
 
 def main() -> None:
     subprocess.run(
-        [sys.executable, str(PLACE_RAN_DIR / "model_files" / "path_gen.py")],
+        [
+            sys.executable,
+            str(PLACE_RAN_DIR / "model_files" / "path_gen.py"),
+            *sys.argv[1:],
+        ],
         cwd=str(PLACE_RAN_DIR),
         check=True,
     )
