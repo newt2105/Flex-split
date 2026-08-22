@@ -524,6 +524,20 @@ def run_stage_3(FO_Stage_1, FO_Stage_2):
     print("Stage 3 - Alocation Time: {}".format(alocation_time_end - alocation_time_start))
     print("Stage 3 - Enlapsed Time: {}".format(end_time - start_time))
     print("Stage 3 - Optimal Solution: {}".format(mdl.solution.get_objective_value()))
+    print("Detailed Stage 3 placement:")
+    print("RU -> Path -> DRC -> CU/DU/RU locations")
+    selected_assignments = [it for it in i if mdl.x[it].solution_value > 0.5]
+    for path_id, drc_id, ru_id in sorted(selected_assignments, key=lambda item: item[2]):
+        selected_path = paths[path_id]
+        selected_drc = DRCs[drc_id]
+        cu_location = "N/A" if selected_drc.Fs_CU == [0] else "CR {}".format(selected_path.seq[0])
+        du_location = "N/A" if selected_drc.Fs_DU == [0] else "CR {}".format(selected_path.seq[1])
+        ru_location = "N/A" if selected_drc.Fs_RU == [0] else "CR {}".format(selected_path.seq[2])
+        print(
+            "RU {} -> Path {} -> DRC {} -> CU={}, DU={}, RU={}".format(
+                ru_id, path_id, drc_id, cu_location, du_location, ru_location
+            )
+        )
 
 
 if __name__ == '__main__':
