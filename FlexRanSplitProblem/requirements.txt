@@ -1,3 +1,4 @@
 networkx>=3.2,<4
 PuLP>=2.8,<4
+matplotlib>=3.8,<4
 pytest>=8,<9

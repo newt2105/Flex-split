@@ -1,0 +1,26 @@
+# Physical-network and candidate-path generation configuration
+#
+# Generate every network below with:
+#   python -m FlexRanSplitProblem.generate_all_networks
+#
+# Relative paths are resolved from the Flex-split repository root.
+
+[generation]
+# Generate one network (for example 16) or several comma-separated networks.
+networks = 8, 16, 32, 64, 128, 256
+profile = LC
+core = 0
+
+# Maximum number of latency-shortest candidate paths generated per RU node.
+# Change this to 10 instead of the old default 4, for example.
+k_paths = 10
+
+# false skips existing phy.pkl/paths.pkl; true regenerates them.
+overwrite = false
+
+[input]
+source_directory = FlexRanSplitProblem/model_files/T2_files
+
+[output]
+# Creates data/network_8, data/network_16, etc.
+directory = data

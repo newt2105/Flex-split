@@ -21,6 +21,7 @@ def main():
         PHY = load_phy_T2(args.links, args.nodes)
 
     out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("wb") as f:
         pickle.dump(PHY, f)
 
