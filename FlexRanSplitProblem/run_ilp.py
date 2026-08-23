@@ -27,31 +27,7 @@ DEFAULT_PHY = PACKAGE_DIR / "phy" / "phy.pkl"
 DEFAULT_RESULTS = PACKAGE_DIR / "results"
 DEFAULT_SETTINGS = PACKAGE_DIR / "settings" / "ilp.txt"
 
-CSV_FIELDS = (
-    "run_id",
-    "network",
-    "profile",
-    "status",
-    "objective",
-    "solve_time_seconds",
-    "beta",
-    "solver",
-    "slice",
-    "ru",
-    "deployed",
-    "admitted",
-    "drc",
-    "path",
-    "latency",
-    "path_nodes",
-    "vupf_node",
-    "vcu_node",
-    "vdu_node",
-    "vru_node",
-    "vupf_to_vcu_links",
-    "vcu_to_vdu_links",
-    "vdu_to_vru_links",
-)
+CSV_FIELDS = ("NSC", "DRC", "path", "L", "placement")
 
 
 def save_sol(lp: pulp.LpProblem, filepath: Path) -> None:
@@ -174,17 +150,9 @@ def save_solution_csv(
     filepath: str | Path,
     solution: Iterable[Dict[str, Any]],
     *,
-    run_id: str,
-    network: int,
-    profile: str,
-    status: str,
-    objective: float,
-    solve_time: float,
-    beta: float,
-    solver: str,
     append: bool = False,
 ) -> Path:
-    """Write one flat CSV row per NSC and return the output path."""
+    """Write only NSC, DRC, path, latency, and placement to CSV."""
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     write_header = not append or not filepath.exists() or filepath.stat().st_size == 0
@@ -196,38 +164,14 @@ def save_solution_csv(
             writer.writeheader()
         for item in solution:
             placement = item.get("vnf_placement", {})
-            links = item.get("virtual_link_mapping", {})
+            latency = item.get("latency")
             writer.writerow(
                 {
-                    "run_id": run_id,
-                    "network": network,
-                    "profile": profile,
-                    "status": status,
-                    "objective": objective,
-                    "solve_time_seconds": solve_time,
-                    "beta": beta,
-                    "solver": solver,
-                    "slice": item.get("slice"),
-                    "ru": item.get("ru"),
-                    "deployed": item.get("deployed"),
-                    "admitted": item.get("admitted"),
-                    "drc": item.get("drc"),
+                    "NSC": item.get("slice"),
+                    "DRC": item.get("drc"),
                     "path": item.get("path"),
-                    "latency": item.get("latency"),
-                    "path_nodes": json.dumps(item.get("path_nodes", [])),
-                    "vupf_node": placement.get("vupf"),
-                    "vcu_node": placement.get("vcu"),
-                    "vdu_node": placement.get("vdu"),
-                    "vru_node": placement.get("vru"),
-                    "vupf_to_vcu_links": json.dumps(
-                        links.get("vupf->vcu", [])
-                    ),
-                    "vcu_to_vdu_links": json.dumps(
-                        links.get("vcu->vdu", [])
-                    ),
-                    "vdu_to_vru_links": json.dumps(
-                        links.get("vdu->vru", [])
-                    ),
+                    "L": "" if latency is None else f"{latency:.3f}",
+                    "placement": str(placement),
                 }
             )
     return filepath
@@ -322,14 +266,6 @@ def main() -> None:
     csv_path = save_solution_csv(
         args.csv,
         solution,
-        run_id=timestamp,
-        network=args.network,
-        profile=args.profile,
-        status=status,
-        objective=objective,
-        solve_time=problem.solver_time,
-        beta=args.beta,
-        solver=args.solver,
         append=args.csv_append,
     )
     semantic_path = args.results / f"solution_{timestamp}.json"
@@ -353,9 +289,11 @@ def main() -> None:
     if args.save_snapshot:
         print(f"Problem snapshot: {snapshot_path.resolve()}")
     for item in solution:
+        latency = item.get("latency")
+        latency_text = "None" if latency is None else f"{latency:.3f}"
         print(
             f"NSC {item['slice']}: DRC={item['drc']}, path={item['path']}, "
-            f"placement={item['vnf_placement']}"
+            f"L={latency_text}, placement={item['vnf_placement']}"
         )
 
 
