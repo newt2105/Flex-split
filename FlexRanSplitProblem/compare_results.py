@@ -17,19 +17,10 @@ DEFAULT_OUTPUT = DEFAULT_FLEX_RESULTS / "comparison.csv"
 
 OUTPUT_FIELDS = (
     "network",
-    "placeran_nsc_count",
-    "flexible_nsc_count",
-    "same_nsc_count",
     "placeran_runtime_s",
     "flexible_runtime_s",
-    "runtime_delta_s",
-    "runtime_ratio_flexible_to_placeran",
-    "faster_model",
-    "placeran_drcs",
-    "flexible_drcs",
     "placeran_drc_count",
     "flexible_drc_count",
-    "drc_count_delta",
 )
 
 
@@ -120,9 +111,7 @@ def summarize_solution(path: str | Path) -> Dict[str, Any]:
         }
     )
     return {
-        "nsc_count": len(rows),
         "runtime": runtimes.pop(),
-        "drcs": drcs,
         "drc_count": len(drcs),
     }
 
@@ -142,37 +131,13 @@ def compare_networks(
     for network in common_networks:
         placeran = summarize_solution(placeran_files[network])
         flexible = summarize_solution(flexible_files[network])
-        runtime_delta = flexible["runtime"] - placeran["runtime"]
-        runtime_ratio = (
-            flexible["runtime"] / placeran["runtime"]
-            if placeran["runtime"] != 0
-            else None
-        )
-        if abs(runtime_delta) < 1e-12:
-            faster_model = "tie"
-        elif runtime_delta < 0:
-            faster_model = "FlexibleSplit"
-        else:
-            faster_model = "PlaceRAN"
-
         rows.append(
             {
                 "network": network,
-                "placeran_nsc_count": placeran["nsc_count"],
-                "flexible_nsc_count": flexible["nsc_count"],
-                "same_nsc_count": placeran["nsc_count"] == flexible["nsc_count"],
                 "placeran_runtime_s": f"{placeran['runtime']:.3f}",
                 "flexible_runtime_s": f"{flexible['runtime']:.3f}",
-                "runtime_delta_s": f"{runtime_delta:.3f}",
-                "runtime_ratio_flexible_to_placeran": (
-                    "" if runtime_ratio is None else f"{runtime_ratio:.3f}"
-                ),
-                "faster_model": faster_model,
-                "placeran_drcs": ";".join(map(str, placeran["drcs"])),
-                "flexible_drcs": ";".join(map(str, flexible["drcs"])),
                 "placeran_drc_count": placeran["drc_count"],
                 "flexible_drc_count": flexible["drc_count"],
-                "drc_count_delta": flexible["drc_count"] - placeran["drc_count"],
             }
         )
     return rows
