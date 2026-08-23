@@ -37,24 +37,48 @@ We also define different scenarios to the Radio Units (RUs) distribution named a
 
 The original three-stage PlaceRAN formulation can also be solved with the
 open-source CBC backend. This preserves the PlaceRAN objectives and input data;
-only the modeling/solver backend changes.
+only the modeling/solver backend changes. Edit `settings/network.txt` to select
+the network and `settings/path.txt` to set the maximum paths generated per RU.
+
+```ini
+# settings/network.txt
+[network]
+name = t2-8
+
+# settings/path.txt
+[paths]
+k_paths = 10
+```
 
 ```bash
 python -m pip install -r requirements-pulp.txt
 python ./run_model_pulp.py
 ```
 
-Select a bundled T2/F1/LC network with `--network`:
+The settings can still be overridden from the command line:
 
 ```bash
-python ./run_model_pulp.py --network t2-16
+python ./run_model_pulp.py --network t2-16 --k-paths 10
 ```
 
 Available values are `t2-8`, `t2-16`, `t2-32`, `t2-64`, `t2-128`, and
 `t2-256`. The default is `t2-8`.
 
 Use `--solver-log` to display CBC's log. The final RU/path/DRC placement is
-printed to the terminal and saved as JSON under `results_pulp/`.
+printed to the terminal. CSV and JSON results are saved under
+`results_pulp/<network>/k_paths_<k>/`.
+
+The primary `solution.csv` uses the same schema as FlexRanSplitProblem:
+
+```csv
+NSC,DRC,path,L,placement,runtime
+1,10,5,1.330,"{'vupf': 0, 'vcu': 1, 'vdu': 4, 'vru': 3}",0.649
+```
+
+`L` is total path latency and `runtime` is the sum of CBC solve time over the
+three PlaceRAN stages. If a T2 topology has fewer than `k_paths` distinct
+physical routes to an RU, the generator keeps all available routes without
+creating duplicates.
 
 ## Final results
 

@@ -1,0 +1,5 @@
+# PlaceRAN candidate-path configuration
+
+[paths]
+# Maximum number of physical core-to-RU paths generated for each RU node.
+k_paths = 10

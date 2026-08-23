@@ -3,15 +3,19 @@ import argparse
 import json
 import ast
 
-NETWORK_CHOICES = ("t2-8", "t2-16", "t2-32", "t2-64", "t2-128", "t2-256")
+from placeran_settings import add_settings_arguments, resolve_settings
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate PlaceRAN paths")
-    parser.add_argument("--network", choices=NETWORK_CHOICES, default="t2-8")
+    add_settings_arguments(parser)
     # run_model_pulp.py forwards model options too; path generation only needs
-    # to consume --network and deliberately ignores the remaining arguments.
-    return parser.parse_known_args()[0]
+    # to consume the shared settings and deliberately ignores the rest.
+    parsed = parser.parse_known_args()[0]
+    settings = resolve_settings(parsed)
+    for key, value in settings.items():
+        setattr(parsed, key, value)
+    return parsed
 
 
 args = parse_args()
@@ -21,7 +25,7 @@ nodes_file = "model_files/T2_files/F1_{}_CRs_nodes_LC.json".format(network_size)
 
 paths = []
 k = 0
-k_stop = 4
+k_stop = args.k_paths
 
 
 class Graph:
@@ -217,5 +221,9 @@ with open('paths.json', 'w') as json_file:
     sum = 0
     for iten in path_data:
         sum += 1
-    print("{} paths configurations successfully found for {}".format(sum, args.network))
+    print(
+        "{} paths configurations successfully found for {} (k_paths={})".format(
+            sum, args.network, args.k_paths
+        )
+    )
     json.dump(data, json_file, indent=4)

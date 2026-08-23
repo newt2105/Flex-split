@@ -8,6 +8,7 @@ replaced by PuLP/CBC while the three lexicographic objectives are preserved.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import time
 from datetime import datetime
@@ -17,6 +18,7 @@ from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 import pulp
 
 import model as placeran
+from placeran_settings import add_settings_arguments, resolve_settings
 
 
 Assignment = Tuple[int, int, int]  # path id, DRC id, RU id
@@ -25,24 +27,29 @@ DRC_PRIORITY = {1: 4, 2: 1, 4: 6, 5: 5, 6: 10, 7: 9, 8: 25, 9: 7, 10: 8}
 PLACE_RAN_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_RESULTS_DIR = PLACE_RAN_DIR / "results_pulp"
 EPSILON = 1e-9
-NETWORK_CHOICES = ("t2-8", "t2-16", "t2-32", "t2-64", "t2-128", "t2-256")
+CSV_FIELDS = ("NSC", "DRC", "path", "L", "placement", "runtime")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Solve the original three-stage PlaceRAN model with PuLP/CBC"
     )
-    parser.add_argument(
-        "--network",
-        choices=NETWORK_CHOICES,
-        default="t2-8",
-        help="T2/F1/LC network instance (default: t2-8)",
-    )
+    add_settings_arguments(parser)
     parser.add_argument("--solver-log", action="store_true", help="Show the CBC solver log")
     parser.add_argument("--time-limit", type=float, default=None, help="Per-stage time limit in seconds")
-    parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS_DIR)
-    parser.add_argument("--no-save", action="store_true", help="Do not save the final JSON result")
-    return parser.parse_args()
+    parser.add_argument("--results", type=Path, default=None)
+    parser.add_argument("--csv", type=Path, default=None, help="CSV output path")
+    parser.add_argument("--append", action="store_true", help="Append rows to an existing CSV")
+    parser.add_argument("--no-save", action="store_true", help="Do not save CSV/JSON results")
+    parsed = parser.parse_args()
+    settings = resolve_settings(parsed)
+    for key, value in settings.items():
+        setattr(parsed, key, value)
+    if parsed.results is None:
+        parsed.results = DEFAULT_RESULTS_DIR / parsed.network / f"k_paths_{parsed.k_paths}"
+    if parsed.csv is None:
+        parsed.csv = parsed.results / "solution.csv"
+    return parsed
 
 
 def load_scenario(network: str):
@@ -317,15 +324,53 @@ def assignment_record(index: Assignment, drcs) -> Dict[str, object]:
     path_id, drc_id, ru_id = index
     path = placeran.paths[path_id]
     drc = drcs[drc_id]
+    placement = {
+        "vupf": 0,
+        "vcu": path.seq[0],
+        "vdu": path.seq[1],
+        "vru": path.seq[2],
+    }
     return {
+        "slice": ru_id,
         "ru": ru_id,
         "path": path_id,
         "drc": drc_id,
+        "latency": path.delay_p1 + path.delay_p2 + path.delay_p3,
+        "placement": placement,
         "cu": None if drc.Fs_CU == [0] else path.seq[0],
         "du": None if drc.Fs_DU == [0] else path.seq[1],
         "ru_cr": None if drc.Fs_RU == [0] else path.seq[2],
         "path_sequence": list(path.seq),
     }
+
+
+def save_solution_csv(
+    filepath: Path,
+    records: Sequence[Mapping[str, object]],
+    runtime: float,
+    append: bool = False,
+) -> Path:
+    """Save the same compact CSV schema used by FlexRanSplitProblem."""
+    filepath = filepath.expanduser().resolve()
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not append or not filepath.exists() or filepath.stat().st_size == 0
+    mode = "a" if append else "w"
+    with filepath.open(mode, newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS)
+        if write_header:
+            writer.writeheader()
+        for record in records:
+            writer.writerow(
+                {
+                    "NSC": record["slice"],
+                    "DRC": record["drc"],
+                    "path": record["path"],
+                    "L": f"{record['latency']:.3f}",
+                    "placement": str(record["placement"]),
+                    "runtime": f"{runtime:.3f}",
+                }
+            )
+    return filepath
 
 
 def print_detailed_solution(records: Sequence[Mapping[str, object]]) -> None:
@@ -344,6 +389,10 @@ def print_detailed_solution(records: Sequence[Mapping[str, object]]) -> None:
 def main() -> None:
     args = parse_args()
     total_started = time.perf_counter()
+    print(f"Network settings: {args.network_settings}")
+    print(f"Path settings   : {args.path_settings}")
+    print(f"Network         : {args.network}")
+    print(f"Paths per RU    : {args.k_paths}")
     drcs, rus = load_scenario(args.network)
     candidates = candidate_assignments(drcs, rus)
     print(f"{len(candidates)} feasible path/DRC/RU assignments generated")
@@ -379,7 +428,9 @@ def main() -> None:
     ]
     print_detailed_solution(records)
     total_time = time.perf_counter() - total_started
+    solver_runtime = sum(stage["solve_time"] for stage in (stage_1, stage_2, stage_3))
     print(f"TOTAL TIME: {total_time}")
+    print(f"SOLVER TIME: {solver_runtime}")
 
     if not args.no_save:
         results_dir = args.results.expanduser().resolve()
@@ -390,15 +441,21 @@ def main() -> None:
             "method": "PlaceRAN",
             "backend": "PuLP/CBC",
             "scenario": args.network,
+            "k_paths": args.k_paths,
+            "network_settings": str(args.network_settings),
+            "path_settings": str(args.path_settings),
             "stage_1": {key: value for key, value in stage_1.items() if key != "selected"},
             "stage_2": {key: value for key, value in stage_2.items() if key != "selected"},
             "stage_3": {key: value for key, value in stage_3.items() if key != "selected"},
             "total_time": total_time,
+            "solver_runtime": solver_runtime,
             "assignments": records,
         }
         with result_path.open("w", encoding="utf-8") as stream:
             json.dump(payload, stream, indent=2)
+        csv_path = save_solution_csv(args.csv, records, solver_runtime, args.append)
         print(f"Result saved: {result_path}")
+        print(f"CSV result : {csv_path}")
 
 
 if __name__ == "__main__":
