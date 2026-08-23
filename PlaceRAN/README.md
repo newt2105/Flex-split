@@ -61,6 +61,14 @@ The settings can still be overridden from the command line:
 python ./run_model_pulp.py --network t2-16 --k-paths 10
 ```
 
+Use Gurobi through either its Python API or command-line backend:
+
+```bash
+python ./run_model_pulp.py --solver gurobi --solver-log
+```
+
+`--solver auto` prefers Gurobi when available and otherwise uses CBC.
+
 Available values are `t2-8`, `t2-16`, `t2-32`, `t2-64`, `t2-128`, and
 `t2-256`. The default is `t2-8`.
 

@@ -35,7 +35,13 @@ def parse_args() -> argparse.Namespace:
         description="Solve the original three-stage PlaceRAN model with PuLP/CBC"
     )
     add_settings_arguments(parser)
-    parser.add_argument("--solver-log", action="store_true", help="Show the CBC solver log")
+    parser.add_argument(
+        "--solver",
+        choices=("auto", "cbc", "gurobi"),
+        default="cbc",
+        help="solver backend (default: cbc)",
+    )
+    parser.add_argument("--solver-log", action="store_true", help="Show the solver log")
     parser.add_argument("--time-limit", type=float, default=None, help="Per-stage time limit in seconds")
     parser.add_argument("--results", type=Path, default=None)
     parser.add_argument("--csv", type=Path, default=None, help="CSV output path")
@@ -50,6 +56,49 @@ def parse_args() -> argparse.Namespace:
     if parsed.csv is None:
         parsed.csv = parsed.results / "solution.csv"
     return parsed
+
+
+def select_solver_backend(requested: str) -> str:
+    """Resolve a user-facing solver name to an available PuLP backend."""
+    available = set(pulp.listSolvers(onlyAvailable=True))
+    gurobi_backends = ("GUROBI", "GUROBI_CMD")
+    if requested in {"auto", "gurobi"}:
+        for backend in gurobi_backends:
+            if backend in available:
+                return backend
+        if requested == "gurobi":
+            available_text = ", ".join(sorted(available)) or "none"
+            raise RuntimeError(
+                "Gurobi is not available to PuLP. Install/configure gurobipy or "
+                "gurobi_cl and a valid license. Available solvers: " + available_text
+            )
+    if "PULP_CBC_CMD" in available:
+        return "PULP_CBC_CMD"
+    if "COIN_CMD" in available:
+        return "COIN_CMD"
+    available_text = ", ".join(sorted(available)) or "none"
+    raise RuntimeError("CBC is not available to PuLP. Available solvers: " + available_text)
+
+
+def build_solver(
+    backend: str,
+    solver_log: bool,
+    time_limit: float | None,
+    warm_start: bool,
+):
+    options = {
+        "msg": solver_log,
+        "gapRel": 0,
+        "timeLimit": time_limit,
+        "warmStart": warm_start,
+    }
+    if backend == "GUROBI":
+        return pulp.GUROBI(**options)
+    if backend == "GUROBI_CMD":
+        return pulp.GUROBI_CMD(**options)
+    if backend == "COIN_CMD":
+        return pulp.COIN_CMD(**options)
+    return pulp.PULP_CBC_CMD(**options)
 
 
 def load_scenario(network: str):
@@ -269,13 +318,14 @@ def solve_stage(
     drcs,
     rus,
     candidates: Sequence[Assignment],
+    solver_backend: str,
     solver_log: bool,
     time_limit: float | None,
     stage_1_value: int | None = None,
     stage_2_value: int | None = None,
     warm_start: Iterable[Assignment] = (),
 ):
-    print(f"Running Stage - {stage} (PuLP/CBC)")
+    print(f"Running Stage - {stage} (PuLP/{solver_backend})")
     print("-" * 107)
     problem, x, allocation_time = build_model(
         stage, drcs, rus, candidates, stage_1_value, stage_2_value
@@ -284,11 +334,11 @@ def solve_stage(
     for index, variable in x.items():
         variable.setInitialValue(1 if index in warm_start_set else 0)
 
-    solver = pulp.PULP_CBC_CMD(
-        msg=solver_log,
-        gapRel=0,
-        timeLimit=time_limit,
-        warmStart=bool(warm_start_set),
+    solver = build_solver(
+        solver_backend,
+        solver_log,
+        time_limit,
+        bool(warm_start_set),
     )
     solve_started = time.perf_counter()
     problem.solve(solver)
@@ -393,18 +443,21 @@ def main() -> None:
     print(f"Path settings   : {args.path_settings}")
     print(f"Network         : {args.network}")
     print(f"Paths per RU    : {args.k_paths}")
+    solver_backend = select_solver_backend(args.solver)
+    print(f"Solver          : {solver_backend}")
     drcs, rus = load_scenario(args.network)
     candidates = candidate_assignments(drcs, rus)
     print(f"{len(candidates)} feasible path/DRC/RU assignments generated")
 
     stage_1 = solve_stage(
-        1, drcs, rus, candidates, args.solver_log, args.time_limit
+        1, drcs, rus, candidates, solver_backend, args.solver_log, args.time_limit
     )
     stage_2 = solve_stage(
         2,
         drcs,
         rus,
         candidates,
+        solver_backend,
         args.solver_log,
         args.time_limit,
         stage_1_value=stage_1["objective"],
@@ -415,6 +468,7 @@ def main() -> None:
         drcs,
         rus,
         candidates,
+        solver_backend,
         args.solver_log,
         args.time_limit,
         stage_1_value=stage_1["objective"],
@@ -436,10 +490,14 @@ def main() -> None:
         results_dir = args.results.expanduser().resolve()
         results_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result_path = results_dir / f"placeran_pulp_{args.network}_{timestamp}.json"
+        backend_name = solver_backend.lower()
+        result_path = results_dir / (
+            f"placeran_pulp_{backend_name}_{args.network}_{timestamp}.json"
+        )
         payload = {
             "method": "PlaceRAN",
-            "backend": "PuLP/CBC",
+            "backend": f"PuLP/{solver_backend}",
+            "requested_solver": args.solver,
             "scenario": args.network,
             "k_paths": args.k_paths,
             "network_settings": str(args.network_settings),
