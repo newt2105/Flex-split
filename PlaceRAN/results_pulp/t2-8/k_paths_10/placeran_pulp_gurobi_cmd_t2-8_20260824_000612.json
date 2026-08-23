@@ -1,0 +1,160 @@
+{
+  "method": "PlaceRAN",
+  "backend": "PuLP/GUROBI_CMD",
+  "requested_solver": "gurobi",
+  "scenario": "t2-8",
+  "k_paths": 10,
+  "network_settings": "/home/stu1/Code/Flex-split/PlaceRAN/settings/network.txt",
+  "path_settings": "/home/stu1/Code/Flex-split/PlaceRAN/settings/path.txt",
+  "stage_1": {
+    "objective": -2,
+    "allocation_time": 0.004618518985807896,
+    "solve_time": 0.017498433007858694,
+    "variables": 159,
+    "constraints": 189
+  },
+  "stage_2": {
+    "objective": 2,
+    "allocation_time": 0.004697000957094133,
+    "solve_time": 0.01772528002038598,
+    "variables": 159,
+    "constraints": 190
+  },
+  "stage_3": {
+    "objective": 55,
+    "allocation_time": 0.004404803970828652,
+    "solve_time": 0.01812430704012513,
+    "variables": 159,
+    "constraints": 191
+  },
+  "total_time": 0.07300441293045878,
+  "solver_runtime": 0.053348020068369806,
+  "assignments": [
+    {
+      "slice": 1,
+      "ru": 1,
+      "path": 14,
+      "drc": 7,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 3
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 3,
+      "path_sequence": [
+        0,
+        2,
+        3
+      ]
+    },
+    {
+      "slice": 2,
+      "ru": 2,
+      "path": 16,
+      "drc": 6,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 4
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 4,
+      "path_sequence": [
+        0,
+        2,
+        4
+      ]
+    },
+    {
+      "slice": 3,
+      "ru": 3,
+      "path": 18,
+      "drc": 7,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 5
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 5,
+      "path_sequence": [
+        0,
+        2,
+        5
+      ]
+    },
+    {
+      "slice": 4,
+      "ru": 4,
+      "path": 23,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 6
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 6,
+      "path_sequence": [
+        0,
+        2,
+        6
+      ]
+    },
+    {
+      "slice": 5,
+      "ru": 5,
+      "path": 31,
+      "drc": 7,
+      "latency": 1.7149999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 7
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 7,
+      "path_sequence": [
+        0,
+        2,
+        7
+      ]
+    },
+    {
+      "slice": 6,
+      "ru": 6,
+      "path": 41,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 8
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 8,
+      "path_sequence": [
+        0,
+        2,
+        8
+      ]
+    }
+  ]
+}

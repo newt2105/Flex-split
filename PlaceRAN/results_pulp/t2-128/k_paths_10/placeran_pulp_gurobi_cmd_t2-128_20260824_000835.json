@@ -1,0 +1,2680 @@
+{
+  "method": "PlaceRAN",
+  "backend": "PuLP/GUROBI_CMD",
+  "requested_solver": "gurobi",
+  "scenario": "t2-128",
+  "k_paths": 10,
+  "network_settings": "/home/stu1/Code/Flex-split/PlaceRAN/settings/network.txt",
+  "path_settings": "/home/stu1/Code/Flex-split/PlaceRAN/settings/path.txt",
+  "stage_1": {
+    "objective": -125,
+    "allocation_time": 0.7396840120200068,
+    "solve_time": 1.1068689309759066,
+    "variables": 4361,
+    "constraints": 2559
+  },
+  "stage_2": {
+    "objective": 5,
+    "allocation_time": 0.7308020300697535,
+    "solve_time": 2.957501371973194,
+    "variables": 4361,
+    "constraints": 2560
+  },
+  "stage_3": {
+    "objective": 1289,
+    "allocation_time": 0.7001964440569282,
+    "solve_time": 4.79730113199912,
+    "variables": 4361,
+    "constraints": 2561
+  },
+  "total_time": 11.121890106005594,
+  "solver_runtime": 8.86167143494822,
+  "assignments": [
+    {
+      "slice": 1,
+      "ru": 1,
+      "path": 605,
+      "drc": 7,
+      "latency": 0.622,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 1,
+        "vru": 3
+      },
+      "cu": null,
+      "du": 1,
+      "ru_cr": 3,
+      "path_sequence": [
+        0,
+        1,
+        3
+      ]
+    },
+    {
+      "slice": 2,
+      "ru": 2,
+      "path": 608,
+      "drc": 6,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 4
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 4,
+      "path_sequence": [
+        0,
+        2,
+        4
+      ]
+    },
+    {
+      "slice": 3,
+      "ru": 3,
+      "path": 1677,
+      "drc": 8,
+      "latency": 0.622,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 5
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 5,
+      "path_sequence": [
+        0,
+        0,
+        5
+      ]
+    },
+    {
+      "slice": 4,
+      "ru": 4,
+      "path": 611,
+      "drc": 7,
+      "latency": 0.6859999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 1,
+        "vru": 6
+      },
+      "cu": null,
+      "du": 1,
+      "ru_cr": 6,
+      "path_sequence": [
+        0,
+        1,
+        6
+      ]
+    },
+    {
+      "slice": 5,
+      "ru": 5,
+      "path": 613,
+      "drc": 7,
+      "latency": 0.622,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 1,
+        "vru": 7
+      },
+      "cu": null,
+      "du": 1,
+      "ru_cr": 7,
+      "path_sequence": [
+        0,
+        1,
+        7
+      ]
+    },
+    {
+      "slice": 6,
+      "ru": 6,
+      "path": 1684,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 8
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 8,
+      "path_sequence": [
+        0,
+        0,
+        8
+      ]
+    },
+    {
+      "slice": 7,
+      "ru": 7,
+      "path": 1686,
+      "drc": 8,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 9
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 9,
+      "path_sequence": [
+        0,
+        0,
+        9
+      ]
+    },
+    {
+      "slice": 8,
+      "ru": 8,
+      "path": 1688,
+      "drc": 8,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 10
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 10,
+      "path_sequence": [
+        0,
+        0,
+        10
+      ]
+    },
+    {
+      "slice": 9,
+      "ru": 9,
+      "path": 1690,
+      "drc": 8,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 11
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 11,
+      "path_sequence": [
+        0,
+        0,
+        11
+      ]
+    },
+    {
+      "slice": 10,
+      "ru": 10,
+      "path": 1691,
+      "drc": 8,
+      "latency": 0.6859999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 12
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 12,
+      "path_sequence": [
+        0,
+        0,
+        12
+      ]
+    },
+    {
+      "slice": 11,
+      "ru": 11,
+      "path": 1693,
+      "drc": 8,
+      "latency": 0.622,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 13
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 13,
+      "path_sequence": [
+        0,
+        0,
+        13
+      ]
+    },
+    {
+      "slice": 12,
+      "ru": 12,
+      "path": 628,
+      "drc": 6,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 2,
+        "vru": 14
+      },
+      "cu": null,
+      "du": 2,
+      "ru_cr": 14,
+      "path_sequence": [
+        0,
+        2,
+        14
+      ]
+    },
+    {
+      "slice": 13,
+      "ru": 13,
+      "path": 1698,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 15
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 15,
+      "path_sequence": [
+        0,
+        0,
+        15
+      ]
+    },
+    {
+      "slice": 14,
+      "ru": 14,
+      "path": 1700,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 16
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 16,
+      "path_sequence": [
+        0,
+        0,
+        16
+      ]
+    },
+    {
+      "slice": 15,
+      "ru": 15,
+      "path": 1702,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 17
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 17,
+      "path_sequence": [
+        0,
+        0,
+        17
+      ]
+    },
+    {
+      "slice": 16,
+      "ru": 16,
+      "path": 1704,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 18
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 18,
+      "path_sequence": [
+        0,
+        0,
+        18
+      ]
+    },
+    {
+      "slice": 17,
+      "ru": 17,
+      "path": 1706,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 19
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 19,
+      "path_sequence": [
+        0,
+        0,
+        19
+      ]
+    },
+    {
+      "slice": 18,
+      "ru": 18,
+      "path": 1708,
+      "drc": 8,
+      "latency": 1.15,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 20
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 20,
+      "path_sequence": [
+        0,
+        0,
+        20
+      ]
+    },
+    {
+      "slice": 19,
+      "ru": 19,
+      "path": 1710,
+      "drc": 8,
+      "latency": 1.214,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 21
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 21,
+      "path_sequence": [
+        0,
+        0,
+        21
+      ]
+    },
+    {
+      "slice": 20,
+      "ru": 20,
+      "path": 1711,
+      "drc": 8,
+      "latency": 0.6859999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 0,
+        "vru": 22
+      },
+      "cu": null,
+      "du": null,
+      "ru_cr": 22,
+      "path_sequence": [
+        0,
+        0,
+        22
+      ]
+    },
+    {
+      "slice": 21,
+      "ru": 21,
+      "path": 646,
+      "drc": 7,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 3,
+        "vru": 23
+      },
+      "cu": null,
+      "du": 3,
+      "ru_cr": 23,
+      "path_sequence": [
+        0,
+        3,
+        23
+      ]
+    },
+    {
+      "slice": 22,
+      "ru": 22,
+      "path": 654,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 3,
+        "vru": 24
+      },
+      "cu": null,
+      "du": 3,
+      "ru_cr": 24,
+      "path_sequence": [
+        0,
+        3,
+        24
+      ]
+    },
+    {
+      "slice": 23,
+      "ru": 23,
+      "path": 662,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 3,
+        "vru": 25
+      },
+      "cu": null,
+      "du": 3,
+      "ru_cr": 25,
+      "path_sequence": [
+        0,
+        3,
+        25
+      ]
+    },
+    {
+      "slice": 24,
+      "ru": 24,
+      "path": 670,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 3,
+        "vru": 26
+      },
+      "cu": null,
+      "du": 3,
+      "ru_cr": 26,
+      "path_sequence": [
+        0,
+        3,
+        26
+      ]
+    },
+    {
+      "slice": 25,
+      "ru": 25,
+      "path": 680,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 4,
+        "vru": 27
+      },
+      "cu": null,
+      "du": 4,
+      "ru_cr": 27,
+      "path_sequence": [
+        0,
+        4,
+        27
+      ]
+    },
+    {
+      "slice": 26,
+      "ru": 26,
+      "path": 688,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 4,
+        "vru": 28
+      },
+      "cu": null,
+      "du": 4,
+      "ru_cr": 28,
+      "path_sequence": [
+        0,
+        4,
+        28
+      ]
+    },
+    {
+      "slice": 27,
+      "ru": 27,
+      "path": 700,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 4,
+        "vru": 29
+      },
+      "cu": null,
+      "du": 4,
+      "ru_cr": 29,
+      "path_sequence": [
+        0,
+        4,
+        29
+      ]
+    },
+    {
+      "slice": 28,
+      "ru": 28,
+      "path": 704,
+      "drc": 6,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 4,
+        "vru": 30
+      },
+      "cu": null,
+      "du": 4,
+      "ru_cr": 30,
+      "path_sequence": [
+        0,
+        4,
+        30
+      ]
+    },
+    {
+      "slice": 29,
+      "ru": 29,
+      "path": 712,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 6,
+        "vru": 31
+      },
+      "cu": null,
+      "du": 6,
+      "ru_cr": 31,
+      "path_sequence": [
+        0,
+        6,
+        31
+      ]
+    },
+    {
+      "slice": 30,
+      "ru": 30,
+      "path": 724,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 6,
+        "vru": 32
+      },
+      "cu": null,
+      "du": 6,
+      "ru_cr": 32,
+      "path_sequence": [
+        0,
+        6,
+        32
+      ]
+    },
+    {
+      "slice": 31,
+      "ru": 31,
+      "path": 726,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 5,
+        "vru": 33
+      },
+      "cu": null,
+      "du": 5,
+      "ru_cr": 33,
+      "path_sequence": [
+        0,
+        5,
+        33
+      ]
+    },
+    {
+      "slice": 32,
+      "ru": 32,
+      "path": 736,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 6,
+        "vru": 34
+      },
+      "cu": null,
+      "du": 6,
+      "ru_cr": 34,
+      "path_sequence": [
+        0,
+        6,
+        34
+      ]
+    },
+    {
+      "slice": 33,
+      "ru": 33,
+      "path": 742,
+      "drc": 6,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 5,
+        "vru": 35
+      },
+      "cu": null,
+      "du": 5,
+      "ru_cr": 35,
+      "path_sequence": [
+        0,
+        5,
+        35
+      ]
+    },
+    {
+      "slice": 34,
+      "ru": 34,
+      "path": 754,
+      "drc": 7,
+      "latency": 1.7149999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 5,
+        "vru": 36
+      },
+      "cu": null,
+      "du": 5,
+      "ru_cr": 36,
+      "path_sequence": [
+        0,
+        5,
+        36
+      ]
+    },
+    {
+      "slice": 35,
+      "ru": 35,
+      "path": 762,
+      "drc": 7,
+      "latency": 1.7149999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 5,
+        "vru": 37
+      },
+      "cu": null,
+      "du": 5,
+      "ru_cr": 37,
+      "path_sequence": [
+        0,
+        5,
+        37
+      ]
+    },
+    {
+      "slice": 36,
+      "ru": 36,
+      "path": 772,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 6,
+        "vru": 38
+      },
+      "cu": null,
+      "du": 6,
+      "ru_cr": 38,
+      "path_sequence": [
+        0,
+        6,
+        38
+      ]
+    },
+    {
+      "slice": 37,
+      "ru": 37,
+      "path": 774,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 7,
+        "vru": 39
+      },
+      "cu": null,
+      "du": 7,
+      "ru_cr": 39,
+      "path_sequence": [
+        0,
+        7,
+        39
+      ]
+    },
+    {
+      "slice": 38,
+      "ru": 38,
+      "path": 784,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 8,
+        "vru": 40
+      },
+      "cu": null,
+      "du": 8,
+      "ru_cr": 40,
+      "path_sequence": [
+        0,
+        8,
+        40
+      ]
+    },
+    {
+      "slice": 39,
+      "ru": 39,
+      "path": 790,
+      "drc": 7,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 7,
+        "vru": 41
+      },
+      "cu": null,
+      "du": 7,
+      "ru_cr": 41,
+      "path_sequence": [
+        0,
+        7,
+        41
+      ]
+    },
+    {
+      "slice": 40,
+      "ru": 40,
+      "path": 804,
+      "drc": 6,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 8,
+        "vru": 42
+      },
+      "cu": null,
+      "du": 8,
+      "ru_cr": 42,
+      "path_sequence": [
+        0,
+        8,
+        42
+      ]
+    },
+    {
+      "slice": 41,
+      "ru": 41,
+      "path": 806,
+      "drc": 7,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 7,
+        "vru": 43
+      },
+      "cu": null,
+      "du": 7,
+      "ru_cr": 43,
+      "path_sequence": [
+        0,
+        7,
+        43
+      ]
+    },
+    {
+      "slice": 42,
+      "ru": 42,
+      "path": 820,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 8,
+        "vru": 44
+      },
+      "cu": null,
+      "du": 8,
+      "ru_cr": 44,
+      "path_sequence": [
+        0,
+        8,
+        44
+      ]
+    },
+    {
+      "slice": 43,
+      "ru": 43,
+      "path": 826,
+      "drc": 7,
+      "latency": 1.6509999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 7,
+        "vru": 45
+      },
+      "cu": null,
+      "du": 7,
+      "ru_cr": 45,
+      "path_sequence": [
+        0,
+        7,
+        45
+      ]
+    },
+    {
+      "slice": 44,
+      "ru": 44,
+      "path": 832,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 8,
+        "vru": 46
+      },
+      "cu": null,
+      "du": 8,
+      "ru_cr": 46,
+      "path_sequence": [
+        0,
+        8,
+        46
+      ]
+    },
+    {
+      "slice": 45,
+      "ru": 45,
+      "path": 844,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 10,
+        "vru": 47
+      },
+      "cu": null,
+      "du": 10,
+      "ru_cr": 47,
+      "path_sequence": [
+        0,
+        10,
+        47
+      ]
+    },
+    {
+      "slice": 46,
+      "ru": 46,
+      "path": 848,
+      "drc": 6,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 10,
+        "vru": 48
+      },
+      "cu": null,
+      "du": 10,
+      "ru_cr": 48,
+      "path_sequence": [
+        0,
+        10,
+        48
+      ]
+    },
+    {
+      "slice": 47,
+      "ru": 47,
+      "path": 854,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 9,
+        "vru": 49
+      },
+      "cu": null,
+      "du": 9,
+      "ru_cr": 49,
+      "path_sequence": [
+        0,
+        9,
+        49
+      ]
+    },
+    {
+      "slice": 48,
+      "ru": 48,
+      "path": 868,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 10,
+        "vru": 50
+      },
+      "cu": null,
+      "du": 10,
+      "ru_cr": 50,
+      "path_sequence": [
+        0,
+        10,
+        50
+      ]
+    },
+    {
+      "slice": 49,
+      "ru": 49,
+      "path": 870,
+      "drc": 6,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 9,
+        "vru": 51
+      },
+      "cu": null,
+      "du": 9,
+      "ru_cr": 51,
+      "path_sequence": [
+        0,
+        9,
+        51
+      ]
+    },
+    {
+      "slice": 50,
+      "ru": 50,
+      "path": 880,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 10,
+        "vru": 52
+      },
+      "cu": null,
+      "du": 10,
+      "ru_cr": 52,
+      "path_sequence": [
+        0,
+        10,
+        52
+      ]
+    },
+    {
+      "slice": 51,
+      "ru": 51,
+      "path": 886,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 9,
+        "vru": 53
+      },
+      "cu": null,
+      "du": 9,
+      "ru_cr": 53,
+      "path_sequence": [
+        0,
+        9,
+        53
+      ]
+    },
+    {
+      "slice": 52,
+      "ru": 52,
+      "path": 894,
+      "drc": 7,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 9,
+        "vru": 54
+      },
+      "cu": null,
+      "du": 9,
+      "ru_cr": 54,
+      "path_sequence": [
+        0,
+        9,
+        54
+      ]
+    },
+    {
+      "slice": 53,
+      "ru": 53,
+      "path": 904,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 12,
+        "vru": 55
+      },
+      "cu": null,
+      "du": 12,
+      "ru_cr": 55,
+      "path_sequence": [
+        0,
+        12,
+        55
+      ]
+    },
+    {
+      "slice": 54,
+      "ru": 54,
+      "path": 912,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 12,
+        "vru": 56
+      },
+      "cu": null,
+      "du": 12,
+      "ru_cr": 56,
+      "path_sequence": [
+        0,
+        12,
+        56
+      ]
+    },
+    {
+      "slice": 55,
+      "ru": 55,
+      "path": 918,
+      "drc": 6,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 11,
+        "vru": 57
+      },
+      "cu": null,
+      "du": 11,
+      "ru_cr": 57,
+      "path_sequence": [
+        0,
+        11,
+        57
+      ]
+    },
+    {
+      "slice": 56,
+      "ru": 56,
+      "path": 926,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 11,
+        "vru": 58
+      },
+      "cu": null,
+      "du": 11,
+      "ru_cr": 58,
+      "path_sequence": [
+        0,
+        11,
+        58
+      ]
+    },
+    {
+      "slice": 57,
+      "ru": 57,
+      "path": 934,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 11,
+        "vru": 59
+      },
+      "cu": null,
+      "du": 11,
+      "ru_cr": 59,
+      "path_sequence": [
+        0,
+        11,
+        59
+      ]
+    },
+    {
+      "slice": 58,
+      "ru": 58,
+      "path": 946,
+      "drc": 6,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 11,
+        "vru": 60
+      },
+      "cu": null,
+      "du": 11,
+      "ru_cr": 60,
+      "path_sequence": [
+        0,
+        11,
+        60
+      ]
+    },
+    {
+      "slice": 59,
+      "ru": 59,
+      "path": 950,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 11,
+        "vru": 61
+      },
+      "cu": null,
+      "du": 11,
+      "ru_cr": 61,
+      "path_sequence": [
+        0,
+        11,
+        61
+      ]
+    },
+    {
+      "slice": 60,
+      "ru": 60,
+      "path": 964,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 12,
+        "vru": 62
+      },
+      "cu": null,
+      "du": 12,
+      "ru_cr": 62,
+      "path_sequence": [
+        0,
+        12,
+        62
+      ]
+    },
+    {
+      "slice": 61,
+      "ru": 61,
+      "path": 970,
+      "drc": 6,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 13,
+        "vru": 63
+      },
+      "cu": null,
+      "du": 13,
+      "ru_cr": 63,
+      "path_sequence": [
+        0,
+        13,
+        63
+      ]
+    },
+    {
+      "slice": 62,
+      "ru": 62,
+      "path": 980,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 14,
+        "vru": 64
+      },
+      "cu": null,
+      "du": 14,
+      "ru_cr": 64,
+      "path_sequence": [
+        0,
+        14,
+        64
+      ]
+    },
+    {
+      "slice": 63,
+      "ru": 63,
+      "path": 984,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 14,
+        "vru": 65
+      },
+      "cu": null,
+      "du": 14,
+      "ru_cr": 65,
+      "path_sequence": [
+        0,
+        14,
+        65
+      ]
+    },
+    {
+      "slice": 64,
+      "ru": 64,
+      "path": 994,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 13,
+        "vru": 66
+      },
+      "cu": null,
+      "du": 13,
+      "ru_cr": 66,
+      "path_sequence": [
+        0,
+        13,
+        66
+      ]
+    },
+    {
+      "slice": 65,
+      "ru": 65,
+      "path": 1000,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 14,
+        "vru": 67
+      },
+      "cu": null,
+      "du": 14,
+      "ru_cr": 67,
+      "path_sequence": [
+        0,
+        14,
+        67
+      ]
+    },
+    {
+      "slice": 66,
+      "ru": 66,
+      "path": 1010,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 13,
+        "vru": 68
+      },
+      "cu": null,
+      "du": 13,
+      "ru_cr": 68,
+      "path_sequence": [
+        0,
+        13,
+        68
+      ]
+    },
+    {
+      "slice": 67,
+      "ru": 67,
+      "path": 1014,
+      "drc": 6,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 13,
+        "vru": 69
+      },
+      "cu": null,
+      "du": 13,
+      "ru_cr": 69,
+      "path_sequence": [
+        0,
+        13,
+        69
+      ]
+    },
+    {
+      "slice": 68,
+      "ru": 68,
+      "path": 1022,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 13,
+        "vru": 70
+      },
+      "cu": null,
+      "du": 13,
+      "ru_cr": 70,
+      "path_sequence": [
+        0,
+        13,
+        70
+      ]
+    },
+    {
+      "slice": 69,
+      "ru": 69,
+      "path": 1032,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 16,
+        "vru": 71
+      },
+      "cu": null,
+      "du": 16,
+      "ru_cr": 71,
+      "path_sequence": [
+        0,
+        16,
+        71
+      ]
+    },
+    {
+      "slice": 70,
+      "ru": 70,
+      "path": 1040,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 16,
+        "vru": 72
+      },
+      "cu": null,
+      "du": 16,
+      "ru_cr": 72,
+      "path_sequence": [
+        0,
+        16,
+        72
+      ]
+    },
+    {
+      "slice": 71,
+      "ru": 71,
+      "path": 1048,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 16,
+        "vru": 73
+      },
+      "cu": null,
+      "du": 16,
+      "ru_cr": 73,
+      "path_sequence": [
+        0,
+        16,
+        73
+      ]
+    },
+    {
+      "slice": 72,
+      "ru": 72,
+      "path": 1058,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 15,
+        "vru": 74
+      },
+      "cu": null,
+      "du": 15,
+      "ru_cr": 74,
+      "path_sequence": [
+        0,
+        15,
+        74
+      ]
+    },
+    {
+      "slice": 73,
+      "ru": 73,
+      "path": 1064,
+      "drc": 6,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 16,
+        "vru": 75
+      },
+      "cu": null,
+      "du": 16,
+      "ru_cr": 75,
+      "path_sequence": [
+        0,
+        16,
+        75
+      ]
+    },
+    {
+      "slice": 74,
+      "ru": 74,
+      "path": 1074,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 15,
+        "vru": 76
+      },
+      "cu": null,
+      "du": 15,
+      "ru_cr": 76,
+      "path_sequence": [
+        0,
+        15,
+        76
+      ]
+    },
+    {
+      "slice": 75,
+      "ru": 75,
+      "path": 1078,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 15,
+        "vru": 77
+      },
+      "cu": null,
+      "du": 15,
+      "ru_cr": 77,
+      "path_sequence": [
+        0,
+        15,
+        77
+      ]
+    },
+    {
+      "slice": 76,
+      "ru": 76,
+      "path": 1092,
+      "drc": 6,
+      "latency": 1.6509999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 16,
+        "vru": 78
+      },
+      "cu": null,
+      "du": 16,
+      "ru_cr": 78,
+      "path_sequence": [
+        0,
+        16,
+        78
+      ]
+    },
+    {
+      "slice": 77,
+      "ru": 77,
+      "path": 1094,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 17,
+        "vru": 79
+      },
+      "cu": null,
+      "du": 17,
+      "ru_cr": 79,
+      "path_sequence": [
+        0,
+        17,
+        79
+      ]
+    },
+    {
+      "slice": 78,
+      "ru": 78,
+      "path": 1102,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 17,
+        "vru": 80
+      },
+      "cu": null,
+      "du": 17,
+      "ru_cr": 80,
+      "path_sequence": [
+        0,
+        17,
+        80
+      ]
+    },
+    {
+      "slice": 79,
+      "ru": 79,
+      "path": 1116,
+      "drc": 6,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 18,
+        "vru": 81
+      },
+      "cu": null,
+      "du": 18,
+      "ru_cr": 81,
+      "path_sequence": [
+        0,
+        18,
+        81
+      ]
+    },
+    {
+      "slice": 80,
+      "ru": 80,
+      "path": 1120,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 18,
+        "vru": 82
+      },
+      "cu": null,
+      "du": 18,
+      "ru_cr": 82,
+      "path_sequence": [
+        0,
+        18,
+        82
+      ]
+    },
+    {
+      "slice": 81,
+      "ru": 81,
+      "path": 1130,
+      "drc": 7,
+      "latency": 1.6509999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 17,
+        "vru": 83
+      },
+      "cu": null,
+      "du": 17,
+      "ru_cr": 83,
+      "path_sequence": [
+        0,
+        17,
+        83
+      ]
+    },
+    {
+      "slice": 82,
+      "ru": 82,
+      "path": 1134,
+      "drc": 6,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 17,
+        "vru": 84
+      },
+      "cu": null,
+      "du": 17,
+      "ru_cr": 84,
+      "path_sequence": [
+        0,
+        17,
+        84
+      ]
+    },
+    {
+      "slice": 83,
+      "ru": 83,
+      "path": 1144,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 18,
+        "vru": 85
+      },
+      "cu": null,
+      "du": 18,
+      "ru_cr": 85,
+      "path_sequence": [
+        0,
+        18,
+        85
+      ]
+    },
+    {
+      "slice": 84,
+      "ru": 84,
+      "path": 1152,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 18,
+        "vru": 86
+      },
+      "cu": null,
+      "du": 18,
+      "ru_cr": 86,
+      "path_sequence": [
+        0,
+        18,
+        86
+      ]
+    },
+    {
+      "slice": 85,
+      "ru": 85,
+      "path": 1160,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 20,
+        "vru": 87
+      },
+      "cu": null,
+      "du": 20,
+      "ru_cr": 87,
+      "path_sequence": [
+        0,
+        20,
+        87
+      ]
+    },
+    {
+      "slice": 86,
+      "ru": 86,
+      "path": 1166,
+      "drc": 7,
+      "latency": 1.123,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 19,
+        "vru": 88
+      },
+      "cu": null,
+      "du": 19,
+      "ru_cr": 88,
+      "path_sequence": [
+        0,
+        19,
+        88
+      ]
+    },
+    {
+      "slice": 87,
+      "ru": 87,
+      "path": 1174,
+      "drc": 7,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 19,
+        "vru": 89
+      },
+      "cu": null,
+      "du": 19,
+      "ru_cr": 89,
+      "path_sequence": [
+        0,
+        19,
+        89
+      ]
+    },
+    {
+      "slice": 88,
+      "ru": 88,
+      "path": 1188,
+      "drc": 6,
+      "latency": 1.6509999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 20,
+        "vru": 90
+      },
+      "cu": null,
+      "du": 20,
+      "ru_cr": 90,
+      "path_sequence": [
+        0,
+        20,
+        90
+      ]
+    },
+    {
+      "slice": 89,
+      "ru": 89,
+      "path": 1192,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 20,
+        "vru": 91
+      },
+      "cu": null,
+      "du": 20,
+      "ru_cr": 91,
+      "path_sequence": [
+        0,
+        20,
+        91
+      ]
+    },
+    {
+      "slice": 90,
+      "ru": 90,
+      "path": 1200,
+      "drc": 7,
+      "latency": 0.9729999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 20,
+        "vru": 92
+      },
+      "cu": null,
+      "du": 20,
+      "ru_cr": 92,
+      "path_sequence": [
+        0,
+        20,
+        92
+      ]
+    },
+    {
+      "slice": 91,
+      "ru": 91,
+      "path": 1206,
+      "drc": 6,
+      "latency": 0.909,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 19,
+        "vru": 93
+      },
+      "cu": null,
+      "du": 19,
+      "ru_cr": 93,
+      "path_sequence": [
+        0,
+        19,
+        93
+      ]
+    },
+    {
+      "slice": 92,
+      "ru": 92,
+      "path": 1218,
+      "drc": 7,
+      "latency": 1.4369999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 19,
+        "vru": 94
+      },
+      "cu": null,
+      "du": 19,
+      "ru_cr": 94,
+      "path_sequence": [
+        0,
+        19,
+        94
+      ]
+    },
+    {
+      "slice": 93,
+      "ru": 93,
+      "path": 1226,
+      "drc": 7,
+      "latency": 1.501,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 21,
+        "vru": 95
+      },
+      "cu": null,
+      "du": 21,
+      "ru_cr": 95,
+      "path_sequence": [
+        0,
+        21,
+        95
+      ]
+    },
+    {
+      "slice": 94,
+      "ru": 94,
+      "path": 1230,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 21,
+        "vru": 96
+      },
+      "cu": null,
+      "du": 21,
+      "ru_cr": 96,
+      "path_sequence": [
+        0,
+        21,
+        96
+      ]
+    },
+    {
+      "slice": 95,
+      "ru": 95,
+      "path": 1240,
+      "drc": 7,
+      "latency": 1.1869999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 22,
+        "vru": 97
+      },
+      "cu": null,
+      "du": 22,
+      "ru_cr": 97,
+      "path_sequence": [
+        0,
+        22,
+        97
+      ]
+    },
+    {
+      "slice": 96,
+      "ru": 96,
+      "path": 1252,
+      "drc": 7,
+      "latency": 1.6509999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 22,
+        "vru": 98
+      },
+      "cu": null,
+      "du": 22,
+      "ru_cr": 98,
+      "path_sequence": [
+        0,
+        22,
+        98
+      ]
+    },
+    {
+      "slice": 97,
+      "ru": 97,
+      "path": 310,
+      "drc": 4,
+      "latency": 1.906,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 30,
+        "vru": 99
+      },
+      "cu": 2,
+      "du": 30,
+      "ru_cr": 99,
+      "path_sequence": [
+        2,
+        30,
+        99
+      ]
+    },
+    {
+      "slice": 98,
+      "ru": 98,
+      "path": 314,
+      "drc": 4,
+      "latency": 1.314,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 42,
+        "vru": 100
+      },
+      "cu": 1,
+      "du": 42,
+      "ru_cr": 100,
+      "path_sequence": [
+        1,
+        42,
+        100
+      ]
+    },
+    {
+      "slice": 99,
+      "ru": 99,
+      "path": 326,
+      "drc": 4,
+      "latency": 1.692,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 48,
+        "vru": 101
+      },
+      "cu": 2,
+      "du": 48,
+      "ru_cr": 101,
+      "path_sequence": [
+        2,
+        48,
+        101
+      ]
+    },
+    {
+      "slice": 100,
+      "ru": 100,
+      "path": 330,
+      "drc": 4,
+      "latency": 1.1,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 51,
+        "vru": 102
+      },
+      "cu": 1,
+      "du": 51,
+      "ru_cr": 102,
+      "path_sequence": [
+        1,
+        51,
+        102
+      ]
+    },
+    {
+      "slice": 101,
+      "ru": 101,
+      "path": 342,
+      "drc": 4,
+      "latency": 1.692,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 57,
+        "vru": 103
+      },
+      "cu": 2,
+      "du": 57,
+      "ru_cr": 103,
+      "path_sequence": [
+        2,
+        57,
+        103
+      ]
+    },
+    {
+      "slice": 102,
+      "ru": 102,
+      "path": 348,
+      "drc": 4,
+      "latency": 1.1420000000000001,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 60,
+        "vru": 104
+      },
+      "cu": 1,
+      "du": 60,
+      "ru_cr": 104,
+      "path_sequence": [
+        1,
+        60,
+        104
+      ]
+    },
+    {
+      "slice": 103,
+      "ru": 103,
+      "path": 358,
+      "drc": 4,
+      "latency": 1.628,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 63,
+        "vru": 105
+      },
+      "cu": 2,
+      "du": 63,
+      "ru_cr": 105,
+      "path_sequence": [
+        2,
+        63,
+        105
+      ]
+    },
+    {
+      "slice": 104,
+      "ru": 104,
+      "path": 364,
+      "drc": 4,
+      "latency": 1.1640000000000001,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 69,
+        "vru": 106
+      },
+      "cu": 1,
+      "du": 69,
+      "ru_cr": 106,
+      "path_sequence": [
+        1,
+        69,
+        106
+      ]
+    },
+    {
+      "slice": 105,
+      "ru": 105,
+      "path": 370,
+      "drc": 4,
+      "latency": 1.1640000000000001,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 75,
+        "vru": 107
+      },
+      "cu": 1,
+      "du": 75,
+      "ru_cr": 107,
+      "path_sequence": [
+        1,
+        75,
+        107
+      ]
+    },
+    {
+      "slice": 106,
+      "ru": 106,
+      "path": 384,
+      "drc": 4,
+      "latency": 1.8419999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 78,
+        "vru": 108
+      },
+      "cu": 2,
+      "du": 78,
+      "ru_cr": 108,
+      "path_sequence": [
+        2,
+        78,
+        108
+      ]
+    },
+    {
+      "slice": 107,
+      "ru": 107,
+      "path": 388,
+      "drc": 4,
+      "latency": 1.1640000000000001,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 81,
+        "vru": 109
+      },
+      "cu": 1,
+      "du": 81,
+      "ru_cr": 109,
+      "path_sequence": [
+        1,
+        81,
+        109
+      ]
+    },
+    {
+      "slice": 108,
+      "ru": 108,
+      "path": 398,
+      "drc": 4,
+      "latency": 1.8419999999999999,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 84,
+        "vru": 110
+      },
+      "cu": 2,
+      "du": 84,
+      "ru_cr": 110,
+      "path_sequence": [
+        2,
+        84,
+        110
+      ]
+    },
+    {
+      "slice": 109,
+      "ru": 109,
+      "path": 406,
+      "drc": 4,
+      "latency": 1.8199999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 90,
+        "vru": 111
+      },
+      "cu": 2,
+      "du": 90,
+      "ru_cr": 111,
+      "path_sequence": [
+        2,
+        90,
+        111
+      ]
+    },
+    {
+      "slice": 110,
+      "ru": 110,
+      "path": 416,
+      "drc": 4,
+      "latency": 1.8199999999999998,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 93,
+        "vru": 112
+      },
+      "cu": 2,
+      "du": 93,
+      "ru_cr": 112,
+      "path_sequence": [
+        2,
+        93,
+        112
+      ]
+    },
+    {
+      "slice": 111,
+      "ru": 111,
+      "path": 420,
+      "drc": 5,
+      "latency": 1.1420000000000001,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 96,
+        "vru": 113
+      },
+      "cu": 1,
+      "du": 96,
+      "ru_cr": 113,
+      "path_sequence": [
+        1,
+        96,
+        113
+      ]
+    },
+    {
+      "slice": 112,
+      "ru": 112,
+      "path": 433,
+      "drc": 5,
+      "latency": 2.097,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 99,
+        "vru": 114
+      },
+      "cu": 2,
+      "du": 99,
+      "ru_cr": 114,
+      "path_sequence": [
+        2,
+        99,
+        114
+      ]
+    },
+    {
+      "slice": 113,
+      "ru": 113,
+      "path": 448,
+      "drc": 5,
+      "latency": 1.7970000000000002,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 100,
+        "vru": 115
+      },
+      "cu": 2,
+      "du": 100,
+      "ru_cr": 115,
+      "path_sequence": [
+        2,
+        100,
+        115
+      ]
+    },
+    {
+      "slice": 114,
+      "ru": 114,
+      "path": 457,
+      "drc": 5,
+      "latency": 1.8830000000000002,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 101,
+        "vru": 116
+      },
+      "cu": 2,
+      "du": 101,
+      "ru_cr": 116,
+      "path_sequence": [
+        2,
+        101,
+        116
+      ]
+    },
+    {
+      "slice": 115,
+      "ru": 115,
+      "path": 472,
+      "drc": 5,
+      "latency": 2.097,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 102,
+        "vru": 117
+      },
+      "cu": 2,
+      "du": 102,
+      "ru_cr": 117,
+      "path_sequence": [
+        2,
+        102,
+        117
+      ]
+    },
+    {
+      "slice": 116,
+      "ru": 116,
+      "path": 484,
+      "drc": 5,
+      "latency": 2.033,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 103,
+        "vru": 118
+      },
+      "cu": 2,
+      "du": 103,
+      "ru_cr": 118,
+      "path_sequence": [
+        2,
+        103,
+        118
+      ]
+    },
+    {
+      "slice": 117,
+      "ru": 117,
+      "path": 496,
+      "drc": 5,
+      "latency": 1.797,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 104,
+        "vru": 119
+      },
+      "cu": 2,
+      "du": 104,
+      "ru_cr": 119,
+      "path_sequence": [
+        2,
+        104,
+        119
+      ]
+    },
+    {
+      "slice": 118,
+      "ru": 118,
+      "path": 502,
+      "drc": 5,
+      "latency": 1.3330000000000002,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 105,
+        "vru": 120
+      },
+      "cu": 1,
+      "du": 105,
+      "ru_cr": 120,
+      "path_sequence": [
+        1,
+        105,
+        120
+      ]
+    },
+    {
+      "slice": 119,
+      "ru": 119,
+      "path": 514,
+      "drc": 5,
+      "latency": 1.3330000000000002,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 106,
+        "vru": 121
+      },
+      "cu": 1,
+      "du": 106,
+      "ru_cr": 121,
+      "path_sequence": [
+        1,
+        106,
+        121
+      ]
+    },
+    {
+      "slice": 120,
+      "ru": 120,
+      "path": 532,
+      "drc": 5,
+      "latency": 2.011,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 107,
+        "vru": 122
+      },
+      "cu": 2,
+      "du": 107,
+      "ru_cr": 122,
+      "path_sequence": [
+        2,
+        107,
+        122
+      ]
+    },
+    {
+      "slice": 121,
+      "ru": 121,
+      "path": 544,
+      "drc": 5,
+      "latency": 2.011,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 108,
+        "vru": 123
+      },
+      "cu": 2,
+      "du": 108,
+      "ru_cr": 123,
+      "path_sequence": [
+        2,
+        108,
+        123
+      ]
+    },
+    {
+      "slice": 122,
+      "ru": 122,
+      "path": 556,
+      "drc": 5,
+      "latency": 1.7970000000000002,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 109,
+        "vru": 124
+      },
+      "cu": 2,
+      "du": 109,
+      "ru_cr": 124,
+      "path_sequence": [
+        2,
+        109,
+        124
+      ]
+    },
+    {
+      "slice": 123,
+      "ru": 123,
+      "path": 565,
+      "drc": 5,
+      "latency": 2.011,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 110,
+        "vru": 125
+      },
+      "cu": 2,
+      "du": 110,
+      "ru_cr": 125,
+      "path_sequence": [
+        2,
+        110,
+        125
+      ]
+    },
+    {
+      "slice": 124,
+      "ru": 124,
+      "path": 571,
+      "drc": 5,
+      "latency": 1.461,
+      "placement": {
+        "vupf": 0,
+        "vcu": 1,
+        "vdu": 111,
+        "vru": 126
+      },
+      "cu": 1,
+      "du": 111,
+      "ru_cr": 126,
+      "path_sequence": [
+        1,
+        111,
+        126
+      ]
+    },
+    {
+      "slice": 125,
+      "ru": 125,
+      "path": 589,
+      "drc": 5,
+      "latency": 1.775,
+      "placement": {
+        "vupf": 0,
+        "vcu": 2,
+        "vdu": 112,
+        "vru": 127
+      },
+      "cu": 2,
+      "du": 112,
+      "ru_cr": 127,
+      "path_sequence": [
+        2,
+        112,
+        127
+      ]
+    },
+    {
+      "slice": 126,
+      "ru": 126,
+      "path": 1662,
+      "drc": 7,
+      "latency": 1.311,
+      "placement": {
+        "vupf": 0,
+        "vcu": 0,
+        "vdu": 22,
+        "vru": 128
+      },
+      "cu": null,
+      "du": 22,
+      "ru_cr": 128,
+      "path_sequence": [
+        0,
+        22,
+        128
+      ]
+    }
+  ]
+}

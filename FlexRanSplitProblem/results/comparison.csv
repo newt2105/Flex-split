@@ -1,0 +1,7 @@
+network,placeran_nsc_count,flexible_nsc_count,same_nsc_count,placeran_runtime_s,flexible_runtime_s,runtime_delta_s,runtime_ratio_flexible_to_placeran,faster_model,placeran_drcs,flexible_drcs,placeran_drc_count,flexible_drc_count,drc_count_delta
+8,6,6,True,0.053,0.788,0.735,14.868,PlaceRAN,6;7,5,2,1,-1
+16,14,14,True,0.097,0.638,0.541,6.577,PlaceRAN,7,10,1,1,0
+32,30,30,True,0.183,1.504,1.321,8.219,PlaceRAN,7,8,1,1,0
+64,62,62,True,0.552,3.590,3.038,6.504,PlaceRAN,6;7,8,2,1,-1
+128,126,126,True,8.862,8.500,-0.362,0.959,FlexibleSplit,4;5;6;7;8,8,5,1,-4
+256,254,254,True,15.803,18.970,3.167,1.200,PlaceRAN,6;7;8,8,3,1,-2
