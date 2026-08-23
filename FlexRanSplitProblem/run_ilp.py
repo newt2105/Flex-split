@@ -27,7 +27,7 @@ DEFAULT_PHY = PACKAGE_DIR / "phy" / "phy.pkl"
 DEFAULT_RESULTS = PACKAGE_DIR / "results"
 DEFAULT_SETTINGS = PACKAGE_DIR / "settings" / "ilp.txt"
 
-CSV_FIELDS = ("NSC", "DRC", "path", "L", "placement")
+CSV_FIELDS = ("NSC", "DRC", "path", "L", "placement", "runtime")
 
 
 def save_sol(lp: pulp.LpProblem, filepath: Path) -> None:
@@ -150,9 +150,10 @@ def save_solution_csv(
     filepath: str | Path,
     solution: Iterable[Dict[str, Any]],
     *,
+    runtime: float,
     append: bool = False,
 ) -> Path:
-    """Write only NSC, DRC, path, latency, and placement to CSV."""
+    """Write compact placement results and solver runtime to CSV."""
     filepath = Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     write_header = not append or not filepath.exists() or filepath.stat().st_size == 0
@@ -172,6 +173,7 @@ def save_solution_csv(
                     "path": item.get("path"),
                     "L": "" if latency is None else f"{latency:.3f}",
                     "placement": str(placement),
+                    "runtime": f"{runtime:.3f}",
                 }
             )
     return filepath
@@ -266,6 +268,7 @@ def main() -> None:
     csv_path = save_solution_csv(
         args.csv,
         solution,
+        runtime=problem.solver_time,
         append=args.csv_append,
     )
     semantic_path = args.results / f"solution_{timestamp}.json"
