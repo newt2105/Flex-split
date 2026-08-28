@@ -1,0 +1,73 @@
+{
+  "source_profile": "LC",
+  "output_profile": "HET",
+  "topology_and_delays_preserved": true,
+  "networks": [
+    {
+      "network": 8,
+      "profile_a_node": 3,
+      "profile_b_node": 6,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    },
+    {
+      "network": 16,
+      "profile_a_node": 3,
+      "profile_b_node": 8,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    },
+    {
+      "network": 32,
+      "profile_a_node": 3,
+      "profile_b_node": 9,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    },
+    {
+      "network": 64,
+      "profile_a_node": 3,
+      "profile_b_node": 11,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    },
+    {
+      "network": 128,
+      "profile_a_node": 3,
+      "profile_b_node": 23,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    },
+    {
+      "network": 256,
+      "profile_a_node": 3,
+      "profile_b_node": 23,
+      "profile_a_hops": 2,
+      "profile_b_hops": 3,
+      "profile_a_cpu": 3.4,
+      "profile_a_access_bw": 15.0,
+      "profile_b_cpu": 5.2,
+      "profile_b_access_bw": 10.5
+    }
+  ]
+}

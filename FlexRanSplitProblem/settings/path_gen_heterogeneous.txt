@@ -1,0 +1,17 @@
+# Generate fresh PHY/path artifacts for the heterogeneous HET profile.
+# Topology and delays are unchanged, but overwrite must remain true so that
+# phy.pkl receives the tuned CPU and bandwidth capacities.
+
+[generation]
+networks = 8, 16, 32, 64, 128, 256
+profile = HET
+core = 0
+k_paths = 10
+overwrite = true
+
+[input]
+source_directory = FlexRanSplitProblem/model_files/T2_tuned_files
+
+[output]
+directory = data_heterogeneous
+
