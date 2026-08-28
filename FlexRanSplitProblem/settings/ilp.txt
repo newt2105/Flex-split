@@ -1,0 +1,37 @@
+# Flexible RAN ILP configuration
+#
+# Run from the Flex-split repository root with:
+#   python -m FlexRanSplitProblem.run_ilp
+#
+# Relative paths are resolved from the Flex-split repository root.
+
+[input]
+# Select one generated T2 network: 8, 16, 32, 64, 128, or 256.
+network = 16
+profile = LC
+
+# Paths are derived automatically. Uncomment only when using custom files.
+# phy = data/network_{network}/phy.pkl
+# paths = data/network_{network}/paths.pkl
+# nodes = FlexRanSplitProblem/model_files/T2_files/F1_{network}_CRs_nodes_{profile}.json
+
+[model]
+core = 0
+beta = 0.5
+
+[solver]
+# auto prefers Gurobi when available, otherwise it uses CBC.
+name = auto
+log = false
+
+[output]
+directory = results/network_{network}
+csv = results/network_{network}/solution.csv
+
+# false replaces the CSV on every run; true appends run history.
+append = false
+
+# Optional legacy/debug artifacts. Keep false when only one CSV is wanted.
+save_json = false
+save_sol = false
+save_snapshot = false
