@@ -294,21 +294,6 @@ def formulateLp(
             f"C9_drc_used_upper_{k}",
         )
 
-    # C10: optional end-to-end latency SLA assigned by the slice profile.
-    for s in S:
-        latency_limit = problem.max_latency(s)
-        if latency_limit is None:
-            continue
-        lp += (
-            pulp.lpSum(
-                path_latency(p) * y[(s, k, p.id)]
-                for k in K
-                for p in paths_by_slice[s]
-            )
-            <= latency_limit,
-            f"C10_slice_latency_{s}",
-        )
-
     # Objective / (14)-(15): used DRC count and normalized total path latency.
     max_path_latency = max(
         path_latency(p)
@@ -389,7 +374,6 @@ def extract_solution(
                 {
                     "slice": s,
                     "ru": s,
-                    "service": problem.service_type(s),
                     "deployed": 0,
                     "admitted": 0,
                     "drc": None,
@@ -424,7 +408,6 @@ def extract_solution(
             {
                 "slice": s,
                 "ru": s,
-                "service": problem.service_type(s),
                 "deployed": 1,
                 "admitted": 1,
                 "drc": k,

@@ -15,10 +15,6 @@ profile = LC
 # paths = data/network_{network}/paths.pkl
 # nodes = FlexRanSplitProblem/model_files/T2_files/F1_{network}_CRs_nodes_{profile}.json
 
-# Optional per-NSC service demands and end-to-end latency SLAs.
-# Remove or comment this line to recover the original identical-demand model.
-slice_profiles = FlexRanSplitProblem/model_files/slice_profiles/network_16.json
-
 [model]
 core = 0
 beta = 0.5

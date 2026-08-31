@@ -5,8 +5,7 @@ from __future__ import annotations
 import gzip
 import pickle
 import uuid
-from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import networkx as nx
 
@@ -19,26 +18,6 @@ from .phy.ran_model import (
     link_req as _link_req,
     node_req as _node_req,
 )
-
-
-@dataclass(frozen=True)
-class SliceProfile:
-    """Traffic and SLA parameters for one NSC treated as a network slice."""
-
-    service: str = "default"
-    cpu_scale: float = 1.0
-    bw_scale: float = 1.0
-    max_latency: float | None = None
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.service, str) or not self.service.strip():
-            raise ValueError("Slice service name must not be empty")
-        if self.cpu_scale <= 0.0:
-            raise ValueError("Slice cpu_scale must be positive")
-        if self.bw_scale <= 0.0:
-            raise ValueError("Slice bw_scale must be positive")
-        if self.max_latency is not None and self.max_latency <= 0.0:
-            raise ValueError("Slice max_latency must be positive when specified")
 
 
 class FlexRanSplitProblem:
@@ -57,7 +36,6 @@ class FlexRanSplitProblem:
         drcs: Dict[int, DRC],
         core_id: int = 0,
         name: str | None = None,
-        slice_profiles: Mapping[int, SliceProfile] | None = None,
     ) -> None:
         self.name = name or f"FlexRanSplitProblem-{uuid.uuid4()}"
 
@@ -71,17 +49,6 @@ class FlexRanSplitProblem:
         self.paths = list(paths)
         self.rus = dict(rus)
         self.S = tuple(rus.keys())
-        supplied_profiles = dict(slice_profiles or {})
-        unknown_slices = set(supplied_profiles).difference(self.S)
-        if unknown_slices:
-            raise ValueError(
-                "Slice profiles contain unknown NSC IDs: "
-                f"{sorted(unknown_slices)}"
-            )
-        self.slice_profiles = {
-            slice_id: supplied_profiles.get(slice_id, SliceProfile())
-            for slice_id in self.S
-        }
 
         # DRC configurations K, VNF set N_s, and virtual-link set E_s.
         self.drcs = dict(drcs)
@@ -105,30 +72,18 @@ class FlexRanSplitProblem:
     # ------------------------------------------------------------------
     def node_req(self, slice_id: int, drc_id: int, vnf: str) -> float:
         """Return node resource required by VNF ``vnf`` under DRC ``drc_id``."""
-        profile = self.slice_profile(slice_id)
-        return profile.cpu_scale * float(_node_req(self.drcs[drc_id], vnf))
+        del slice_id  # Requirements are currently identical across NSCs.
+        return float(_node_req(self.drcs[drc_id], vnf))
 
     def link_req(self, slice_id: int, drc_id: int, segment: str) -> float:
         """Return bandwidth required by a virtual link under a DRC."""
-        profile = self.slice_profile(slice_id)
-        return profile.bw_scale * float(_link_req(self.drcs[drc_id], segment))
+        del slice_id
+        return float(_link_req(self.drcs[drc_id], segment))
 
     def delay_req(self, slice_id: int, drc_id: int, segment: str) -> float:
         """Legacy per-segment delay bound retained for RL compatibility."""
         del slice_id
         return float(_delay_req(self.drcs[drc_id], segment))
-
-    def slice_profile(self, slice_id: int) -> SliceProfile:
-        """Return the service profile assigned to one NSC/slice."""
-        return self.slice_profiles[slice_id]
-
-    def service_type(self, slice_id: int) -> str:
-        """Return the service label assigned to one NSC/slice."""
-        return self.slice_profile(slice_id).service
-
-    def max_latency(self, slice_id: int) -> float | None:
-        """Return the optional end-to-end path-latency SLA for one slice."""
-        return self.slice_profile(slice_id).max_latency
 
     # ------------------------------------------------------------------
     # Physical path helpers.

@@ -20,7 +20,6 @@ Tài liệu này ánh xạ trực tiếp Section III-IV của bài báo sang
 | \(R_{s,k,v}\) | Resource của VNF \(v\) với DRC \(k\) | `problem.node_req(s, k, v)` |
 | \(R_{s,k,vw}\) | Bandwidth của virtual link \(vw\) | `problem.link_req(s, k, segment)` |
 | \(L_p\) | Tổng latency của path \(p\) | `path_latency(p)` |
-| \(L_s^{max}\) | SLA latency end-to-end tùy chọn của slice \(s\) | `problem.max_latency(s)` |
 
 `K` được lấy từ dữ liệu đầu vào, vì vậy ILP hỗ trợ cả 12 DRC trong bài báo
 hoặc tập 9 DRC hiện có của `DRC_structure_T2()`.
@@ -52,12 +51,6 @@ path. Path chỉ là một chuỗi node vật lý; vị trí VNF do `x_node` quy
 - **C7 / (10):** flow conservation cho từng virtual link.
 - **C8 / (11):** tắt các biến link mapping của path không được chọn.
 - **C9 / (12)-(13):** `pi_tilde[k]` là phép OR của tất cả `pi[s,k]`.
-- **C10:** nếu slice có SLA, path được chọn phải thỏa
-  `sum_{k,p} y[s,k,p] * L_p <= max_latency[s]`.
-
-Khi có `SliceProfile`, CPU và bandwidth gốc của DRC lần lượt được nhân với
-`cpu_scale` và `bw_scale` của slice. Nếu không cấu hình profile, cả hai hệ số
-mặc định bằng 1 và không có SLA latency, nên mô hình giữ hành vi cũ.
 
 C9 được code dưới dạng `sum_s pi[s,k] <= |S| pi_tilde[k]` và
 `pi_tilde[k] <= sum_s pi[s,k]`. Dạng này tương đương với (13) cho biến nhị

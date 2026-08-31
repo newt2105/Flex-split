@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import networkx as nx
 import pulp
 
-from FlexRanSplitProblem.common import FlexRanSplitProblem, SliceProfile
+from FlexRanSplitProblem.common import FlexRanSplitProblem
 from FlexRanSplitProblem.lp_formulation import extract_solution, formulateLp
 from FlexRanSplitProblem.phy.path_model import Path
 from FlexRanSplitProblem.phy.ran_model import DRC, RU
-from FlexRanSplitProblem.run_ilp import load_slice_profiles
 
 
 def make_drc(drc_id: int) -> DRC:
@@ -38,9 +35,7 @@ def add_bidirectional_edge(graph: nx.DiGraph, u: int, v: int, delay: float) -> N
     graph.add_edge(v, u, capacity=10.0, delay=delay)
 
 
-def build_single_slice_problem(
-    slice_profile: SliceProfile | None = None,
-) -> FlexRanSplitProblem:
+def build_single_slice_problem() -> FlexRanSplitProblem:
     graph = nx.DiGraph()
     for node in range(8):
         graph.add_node(node, cpu=0.0 if node == 0 else 10.0)
@@ -63,7 +58,6 @@ def build_single_slice_problem(
         drcs={1: make_drc(1), 2: make_drc(2)},
         core_id=0,
         name="unit_test_model",
-        slice_profiles={1: slice_profile} if slice_profile else None,
     )
 
 
@@ -136,48 +130,3 @@ def test_legacy_placement_paths_are_deduplicated_by_node_sequence() -> None:
     assert [path.id for path in problem.paths_for_slice(1)] == [1, 2]
     model = formulateLp(problem)
     assert all(key[2] != 3 for key in model._vars["y"])
-
-
-def test_slice_profile_scales_resources_and_is_extracted() -> None:
-    profile = SliceProfile(
-        service="eMBB",
-        cpu_scale=2.0,
-        bw_scale=3.0,
-        max_latency=3.0,
-    )
-    problem = build_single_slice_problem(profile)
-
-    assert problem.node_req(1, 1, "vcu") == 2.0
-    assert problem.link_req(1, 1, "FH") == 3.0
-
-    model = formulateLp(problem, beta=1.0)
-    solve(model)
-    item = extract_solution(problem, model)[0]
-
-    assert item["service"] == "eMBB"
-    assert item["path"] == 1
-    assert "C10_slice_latency_1" in model.constraints
-
-
-def test_missing_slice_profile_preserves_original_resource_values() -> None:
-    problem = build_single_slice_problem()
-
-    assert problem.service_type(1) == "default"
-    assert problem.node_req(1, 1, "vdu") == 1.0
-    assert problem.link_req(1, 1, "MH") == 1.0
-    assert problem.max_latency(1) is None
-
-
-def test_network_16_slice_profile_file_is_complete() -> None:
-    profile_path = (
-        Path(__file__).resolve().parents[1]
-        / "model_files"
-        / "slice_profiles"
-        / "network_16.json"
-    )
-    profiles = load_slice_profiles(profile_path)
-
-    assert set(profiles) == set(range(1, 15))
-    assert profiles[1].service == "eMBB"
-    assert profiles[6].service == "URLLC"
-    assert profiles[7].service == "mMTC"
