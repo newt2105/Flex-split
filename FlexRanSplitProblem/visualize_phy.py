@@ -100,6 +100,7 @@ def draw_phy_and_paths(
     placement: Dict[str, Any] | None = None,
     core_id: int = 0,
     edge_labels: bool = False,
+    node_resources: bool = False,
     output_path: str | Path = "results/phy-path.png",
     title: str | None = None,
 ) -> Path:
@@ -192,7 +193,15 @@ def draw_phy_and_paths(
             suffix = "\n" + ",".join(placement_by_node[node])
         elif node in ru_nodes:
             suffix = "\nRU"
-        labels[node] = f"{node}{suffix}"
+        resource_suffix = ""
+        if node_resources:
+            attributes = graph.nodes[node]
+            cpu = attributes.get(
+                "cpu",
+                attributes.get("cap", attributes.get("capacity", "?")),
+            )
+            resource_suffix = f"\nCPU={cpu}"
+        labels[node] = f"{node}{suffix}{resource_suffix}"
 
     nx.draw_networkx_labels(
         graph,
@@ -208,7 +217,7 @@ def draw_phy_and_paths(
         for source, target, attributes in graph.edges(data=True):
             capacity = attributes.get("capacity", attributes.get("cap", "?"))
             delay = attributes.get("delay", "?")
-            labels_by_edge[(source, target)] = f"A={capacity}\nL={delay}"
+            labels_by_edge[(source, target)] = f"BW={capacity}\nDelay={delay}"
         nx.draw_networkx_edge_labels(
             graph,
             positions,

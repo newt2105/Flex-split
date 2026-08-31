@@ -1,0 +1,33 @@
+# Persistent heterogeneous-PHY generation settings
+#
+# Run from the Flex-split repository root with:
+#   python -m FlexRanSplitProblem.generate_heterogeneous_phy
+#
+# The original data/network_X files are read-only inputs and are never changed.
+
+[generation]
+# Generate one network (for example 16) or several comma-separated networks.
+networks = 16
+profile = LC
+core = 0
+
+# Apply these factors repeatedly to sorted non-core nodes and physical links.
+# They match trung_run_ilp.py. Values must be greater than 0 and at most 1.
+node_cpu_factors = 0.55, 0.75, 0.95
+link_bw_factors = 0.40, 0.55, 0.70, 0.85
+
+# false protects an existing generated dataset; true replaces it.
+overwrite = false
+
+[input]
+# Relative paths are resolved from the Flex-split repository root.
+data_directory = data
+nodes_directory = FlexRanSplitProblem/model_files/T2_files
+
+[output]
+# Creates FlexRanSplitProblem/data_heterogeneous/network_16, etc.
+directory = FlexRanSplitProblem/data_heterogeneous
+
+# paths.pkl is unchanged because topology and delay are unchanged. Copying it
+# makes each generated network directory directly usable by run_ilp.py.
+copy_paths = true

@@ -1,0 +1,35 @@
+{
+  "services": {
+    "eMBB": {
+      "cpu_scale": 1.2,
+      "bw_scale": 1.5,
+      "max_latency": 1.5
+    },
+    "URLLC": {
+      "cpu_scale": 1.1,
+      "bw_scale": 1.0,
+      "max_latency": 1.0
+    },
+    "mMTC": {
+      "cpu_scale": 0.5,
+      "bw_scale": 0.3,
+      "max_latency": 2.0
+    }
+  },
+  "slices": {
+    "1": "eMBB",
+    "2": "eMBB",
+    "3": "eMBB",
+    "4": "eMBB",
+    "5": "eMBB",
+    "6": "URLLC",
+    "7": "mMTC",
+    "8": "URLLC",
+    "9": "mMTC",
+    "10": "URLLC",
+    "11": "mMTC",
+    "12": "URLLC",
+    "13": "mMTC",
+    "14": "URLLC"
+  }
+}

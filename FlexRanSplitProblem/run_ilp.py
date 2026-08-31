@@ -14,7 +14,7 @@ from typing import Any, Dict, Iterable
 
 import pulp
 
-from .common import FlexRanSplitProblem
+from .common import FlexRanSplitProblem, SliceProfile
 from .lp_formulation import DEFAULT_BETA, extract_solution, formulateLp
 from .phy.ran_model import DRC_structure_T2, build_rus_from_nodes_json_T2
 
@@ -27,7 +27,7 @@ DEFAULT_PHY = PACKAGE_DIR / "phy" / "phy.pkl"
 DEFAULT_RESULTS = PACKAGE_DIR / "results"
 DEFAULT_SETTINGS = PACKAGE_DIR / "settings" / "ilp.txt"
 
-CSV_FIELDS = ("NSC", "DRC", "path", "L", "placement", "runtime")
+CSV_FIELDS = ("NSC", "service", "DRC", "path", "L", "placement", "runtime")
 
 
 def save_sol(lp: pulp.LpProblem, filepath: Path) -> None:
@@ -72,6 +72,53 @@ def _read_bool(
         ) from exc
 
 
+def load_slice_profiles(filepath: str | Path) -> Dict[int, SliceProfile]:
+    """Load service definitions and per-NSC assignments from JSON."""
+    filepath = Path(filepath)
+    with filepath.open("r", encoding="utf-8") as stream:
+        payload = json.load(stream)
+
+    if not isinstance(payload, dict):
+        raise ValueError("Slice profile JSON must contain an object")
+    services = payload.get("services")
+    assignments = payload.get("slices")
+    if not isinstance(services, dict) or not services:
+        raise ValueError("Slice profile JSON must define a non-empty 'services' object")
+    if not isinstance(assignments, dict) or not assignments:
+        raise ValueError("Slice profile JSON must define a non-empty 'slices' object")
+
+    service_profiles: Dict[str, SliceProfile] = {}
+    for service, values in services.items():
+        if not isinstance(service, str) or not isinstance(values, dict):
+            raise ValueError("Each service profile must be a named JSON object")
+        raw_max_latency = values.get("max_latency")
+        service_profiles[service] = SliceProfile(
+            service=service,
+            cpu_scale=float(values.get("cpu_scale", 1.0)),
+            bw_scale=float(values.get("bw_scale", 1.0)),
+            max_latency=(
+                None if raw_max_latency is None else float(raw_max_latency)
+            ),
+        )
+
+    result: Dict[int, SliceProfile] = {}
+    for raw_slice_id, service in assignments.items():
+        try:
+            slice_id = int(raw_slice_id)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid NSC ID in slice profiles: {raw_slice_id!r}") from exc
+        if slice_id in result:
+            raise ValueError(f"Duplicate NSC ID in slice profiles: {slice_id}")
+        if not isinstance(service, str):
+            raise ValueError(f"NSC {slice_id} must reference a service name")
+        if service not in service_profiles:
+            raise ValueError(
+                f"NSC {slice_id} references undefined service {service!r}"
+            )
+        result[slice_id] = service_profiles[service]
+    return result
+
+
 def load_settings(settings_path: str | Path) -> Dict[str, Any]:
     """Load and validate the human-editable ``settings/ilp.txt``."""
     settings_path = Path(settings_path).expanduser()
@@ -114,6 +161,15 @@ def load_settings(settings_path: str | Path) -> Dict[str, Any]:
         value = parser.get("input", option, fallback=fallback)
         return _resolve_repo_path(value.format(**path_variables))
 
+    slice_profiles_value = parser.get(
+        "input", "slice_profiles", fallback=""
+    ).strip()
+    slice_profiles_path = (
+        _resolve_repo_path(slice_profiles_value.format(**path_variables))
+        if slice_profiles_value
+        else None
+    )
+
     results_value = parser.get(
         "output",
         "directory",
@@ -131,6 +187,7 @@ def load_settings(settings_path: str | Path) -> Dict[str, Any]:
             "FlexRanSplitProblem/model_files/T2_files/"
             "F1_{network}_CRs_nodes_{profile}.json",
         ),
+        "slice_profiles": slice_profiles_path,
         "results": _resolve_repo_path(results_value),
         "csv": _resolve_repo_path(csv_value),
         "csv_append": _read_bool(parser, "output", "append", False),
@@ -169,6 +226,7 @@ def save_solution_csv(
             writer.writerow(
                 {
                     "NSC": item.get("slice"),
+                    "service": item.get("service", "default"),
                     "DRC": item.get("drc"),
                     "path": item.get("path"),
                     "L": "" if latency is None else f"{latency:.3f}",
@@ -190,6 +248,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nodes", type=Path, help="override [input] nodes")
     parser.add_argument("--paths", type=Path, help="override [input] paths")
     parser.add_argument("--phy", type=Path, help="override [input] phy")
+    parser.add_argument(
+        "--slice-profiles",
+        type=Path,
+        help="override the optional [input] slice_profiles JSON",
+    )
     parser.add_argument("--results", type=Path, help="override [output] directory")
     parser.add_argument("--csv", type=Path, help="override [output] csv")
     parser.add_argument("--core", type=int, help="override [model] core")
@@ -204,7 +267,7 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     settings = load_settings(args.settings)
 
-    for key in ("nodes", "paths", "phy", "results", "csv"):
+    for key in ("nodes", "paths", "phy", "slice_profiles", "results", "csv"):
         command_line_value = getattr(args, key)
         if command_line_value is not None:
             settings[key] = _resolve_repo_path(command_line_value)
@@ -226,11 +289,18 @@ def main() -> None:
     print(f"PHY     : {args.phy.resolve()}")
     print(f"Paths   : {args.paths.resolve()}")
     print(f"Nodes   : {args.nodes.resolve()}")
+    print(
+        "Slices  :",
+        args.slice_profiles.resolve() if args.slice_profiles else "default profile",
+    )
 
     with args.phy.open("rb") as stream:
         physical_network = pickle.load(stream)
     with args.paths.open("rb") as stream:
         paths = pickle.load(stream)
+    slice_profiles = (
+        load_slice_profiles(args.slice_profiles) if args.slice_profiles else None
+    )
 
     problem = FlexRanSplitProblem(
         physical_network=physical_network,
@@ -239,6 +309,7 @@ def main() -> None:
         drcs=DRC_structure_T2(),
         core_id=args.core,
         name="Flexible_RAN_Placement",
+        slice_profiles=slice_profiles,
     )
 
     model = formulateLp(problem, beta=args.beta)
@@ -295,7 +366,8 @@ def main() -> None:
         latency = item.get("latency")
         latency_text = "None" if latency is None else f"{latency:.3f}"
         print(
-            f"NSC {item['slice']}: DRC={item['drc']}, path={item['path']}, "
+            f"NSC {item['slice']} ({item['service']}): "
+            f"DRC={item['drc']}, path={item['path']}, "
             f"L={latency_text}, placement={item['vnf_placement']}"
         )
 
