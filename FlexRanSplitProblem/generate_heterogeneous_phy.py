@@ -81,6 +81,9 @@ def load_settings(settings_path: str | Path) -> Dict[str, Any]:
         ),
         "overwrite": parser.getboolean("generation", "overwrite", fallback=False),
         "copy_paths": parser.getboolean("output", "copy_paths", fallback=True),
+        "write_placeran_json": parser.getboolean(
+            "output", "write_placeran_json", fallback=True
+        ),
         "source_data_directory": _resolve_repo_path(
             parser.get("input", "data_directory", fallback="data")
         ),
@@ -195,6 +198,27 @@ def _write_nodes_json(source: Path, output: Path, physical_network: Any) -> None
         stream.write("\n")
 
 
+def _write_links_json(source: Path, output: Path, physical_network: Any) -> None:
+    """Write PlaceRAN-compatible link JSON with scaled capacities."""
+    with source.open("r", encoding="utf-8") as stream:
+        payload = json.load(stream)
+    for item in payload["links"]:
+        source_node = int(item["fromNode"])
+        target_node = int(item["toNode"])
+        if physical_network.has_edge(source_node, target_node):
+            attributes = physical_network[source_node][target_node]
+        elif physical_network.has_edge(target_node, source_node):
+            attributes = physical_network[target_node][source_node]
+        else:
+            raise ValueError(
+                f"Source link {(source_node, target_node)} is missing from the PHY"
+            )
+        item["capacity"] = _capacity(attributes)
+    with output.open("w", encoding="utf-8") as stream:
+        json.dump(payload, stream, indent=2)
+        stream.write("\n")
+
+
 def generate_network(network: int, settings: Dict[str, Any]) -> Path:
     """Generate one self-contained heterogeneous dataset directory."""
     source_dir = settings["source_data_directory"] / f"network_{network}"
@@ -204,9 +228,15 @@ def generate_network(network: int, settings: Dict[str, Any]) -> Path:
         settings["source_nodes_directory"]
         / f"F1_{network}_CRs_nodes_{settings['profile']}.json"
     )
+    source_links = (
+        settings["source_nodes_directory"]
+        / f"{network}_CRs_links_{settings['profile']}.json"
+    )
     required = [source_phy, source_nodes]
     if settings["copy_paths"]:
         required.append(source_paths)
+    if settings["write_placeran_json"]:
+        required.append(source_links)
     missing = [path for path in required if not path.is_file()]
     if missing:
         raise FileNotFoundError(
@@ -215,7 +245,19 @@ def generate_network(network: int, settings: Dict[str, Any]) -> Path:
 
     output_dir = settings["output_directory"] / f"network_{network}"
     output_phy = output_dir / "phy.pkl"
-    if output_phy.exists() and not settings["overwrite"]:
+    placeran_dir = output_dir / "placeran"
+    expected_outputs = [output_phy, output_dir / "nodes.json"]
+    if settings["copy_paths"]:
+        expected_outputs.append(output_dir / "paths.pkl")
+    if settings["write_placeran_json"]:
+        expected_outputs.extend(
+            (
+                placeran_dir
+                / f"F1_{network}_CRs_nodes_{settings['profile']}.json",
+                placeran_dir / f"{network}_CRs_links_{settings['profile']}.json",
+            )
+        )
+    if all(path.exists() for path in expected_outputs) and not settings["overwrite"]:
         print(f"network_{network}: skipped (already exists: {output_phy})")
         return output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -231,6 +273,19 @@ def generate_network(network: int, settings: Dict[str, Any]) -> Path:
     )
     _write_pickle(output_phy, physical_network)
     _write_nodes_json(source_nodes, output_dir / "nodes.json", physical_network)
+
+    if settings["write_placeran_json"]:
+        placeran_dir.mkdir(parents=True, exist_ok=True)
+        _write_nodes_json(
+            source_nodes,
+            placeran_dir / f"F1_{network}_CRs_nodes_{settings['profile']}.json",
+            physical_network,
+        )
+        _write_links_json(
+            source_links,
+            placeran_dir / f"{network}_CRs_links_{settings['profile']}.json",
+            physical_network,
+        )
 
     if settings["copy_paths"]:
         shutil.copy2(source_paths, output_dir / "paths.pkl")

@@ -11,9 +11,9 @@ network = 16
 profile = LC
 
 # Paths are derived automatically. Uncomment only when using custom files.
-# phy = data/network_{network}/phy.pkl
-# paths = data/network_{network}/paths.pkl
-# nodes = FlexRanSplitProblem/model_files/T2_files/F1_{network}_CRs_nodes_{profile}.json
+phy = FlexRanSplitProblem/data_heterogeneous/network_{network}/phy.pkl
+paths = FlexRanSplitProblem/data_heterogeneous/network_{network}/paths.pkl
+nodes = FlexRanSplitProblem/data_heterogeneous/network_{network}/nodes.json
 
 [model]
 core = 0
@@ -25,13 +25,13 @@ name = auto
 log = false
 
 [output]
-directory = results/network_{network}
-csv = results/network_{network}/solution.csv
+directory = FlexRanSplitProblem/results_heterogeneous/network_{network}
+csv = FlexRanSplitProblem/results_heterogeneous/network_{network}/solution.csv
 
 # false replaces the CSV on every run; true appends run history.
 append = false
 
 # Optional legacy/debug artifacts. Keep false when only one CSV is wanted.
-save_json = false
-save_sol = false
-save_snapshot = false
+save_json = true
+save_sol = true
+save_snapshot = true

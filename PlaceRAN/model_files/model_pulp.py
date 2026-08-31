@@ -101,7 +101,7 @@ def build_solver(
     return pulp.PULP_CBC_CMD(**options)
 
 
-def load_scenario(network: str):
+def load_scenario(network: str, topology_dir: Path | None = None):
     """Load one of the bundled T2/F1/LC network instances."""
     network_size = int(network.rsplit("-", 1)[1])
     placeran.links.clear()
@@ -109,8 +109,10 @@ def load_scenario(network: str):
     placeran.delay.clear()
     placeran.crs.clear()
     placeran.paths.clear()
-    placeran.read_topology_T2(network_size)
-    return placeran.DRC_structure_T2(), placeran.RU_location_T2(network_size)
+    placeran.read_topology_T2(network_size, topology_dir)
+    return placeran.DRC_structure_T2(), placeran.RU_location_T2(
+        network_size, topology_dir
+    )
 
 
 def path_matches_drc(path, drc) -> bool:
@@ -442,10 +444,11 @@ def main() -> None:
     print(f"Network settings: {args.network_settings}")
     print(f"Path settings   : {args.path_settings}")
     print(f"Network         : {args.network}")
+    print(f"Topology        : {args.topology_dir}")
     print(f"Paths per RU    : {args.k_paths}")
     solver_backend = select_solver_backend(args.solver)
     print(f"Solver          : {solver_backend}")
-    drcs, rus = load_scenario(args.network)
+    drcs, rus = load_scenario(args.network, args.topology_dir)
     candidates = candidate_assignments(drcs, rus)
     print(f"{len(candidates)} feasible path/DRC/RU assignments generated")
 
@@ -502,6 +505,7 @@ def main() -> None:
             "k_paths": args.k_paths,
             "network_settings": str(args.network_settings),
             "path_settings": str(args.path_settings),
+            "topology_dir": str(args.topology_dir),
             "stage_1": {key: value for key, value in stage_1.items() if key != "selected"},
             "stage_2": {key: value for key, value in stage_2.items() if key != "selected"},
             "stage_3": {key: value for key, value in stage_3.items() if key != "selected"},

@@ -1,0 +1,364 @@
+{
+  "network": 16,
+  "source_phy": "/home/stu1/Code/Flex-split/data/network_16/phy.pkl",
+  "node_cpu_factors": [
+    1.0,
+    1.0,
+    0.18,
+    0.18,
+    0.75,
+    0.75,
+    0.95,
+    0.75,
+    0.55,
+    0.55,
+    0.75,
+    0.75,
+    0.55,
+    0.75,
+    0.95,
+    0.55
+  ],
+  "link_bw_factors": [
+    0.85,
+    0.85,
+    1.0,
+    1.0,
+    0.85,
+    0.85,
+    0.85,
+    1.0,
+    1.0,
+    0.85,
+    0.85,
+    0.85,
+    0.4,
+    0.7,
+    0.7,
+    0.85,
+    0.4,
+    0.7,
+    0.7,
+    0.85,
+    0.4,
+    0.7,
+    0.85,
+    0.85,
+    0.4,
+    0.7,
+    0.85,
+    0.85,
+    0.7,
+    0.7
+  ],
+  "nodes": [
+    {
+      "node": 1,
+      "old_cpu": 16.0,
+      "factor": 1.0,
+      "new_cpu": 16.0
+    },
+    {
+      "node": 2,
+      "old_cpu": 16.0,
+      "factor": 1.0,
+      "new_cpu": 16.0
+    },
+    {
+      "node": 3,
+      "old_cpu": 16.0,
+      "factor": 0.18,
+      "new_cpu": 2.88
+    },
+    {
+      "node": 4,
+      "old_cpu": 16.0,
+      "factor": 0.18,
+      "new_cpu": 2.88
+    },
+    {
+      "node": 5,
+      "old_cpu": 16.0,
+      "factor": 0.75,
+      "new_cpu": 12.0
+    },
+    {
+      "node": 6,
+      "old_cpu": 16.0,
+      "factor": 0.75,
+      "new_cpu": 12.0
+    },
+    {
+      "node": 7,
+      "old_cpu": 16.0,
+      "factor": 0.95,
+      "new_cpu": 15.2
+    },
+    {
+      "node": 8,
+      "old_cpu": 8.0,
+      "factor": 0.75,
+      "new_cpu": 6.0
+    },
+    {
+      "node": 9,
+      "old_cpu": 8.0,
+      "factor": 0.55,
+      "new_cpu": 4.4
+    },
+    {
+      "node": 10,
+      "old_cpu": 8.0,
+      "factor": 0.55,
+      "new_cpu": 4.4
+    },
+    {
+      "node": 11,
+      "old_cpu": 8.0,
+      "factor": 0.75,
+      "new_cpu": 6.0
+    },
+    {
+      "node": 12,
+      "old_cpu": 8.0,
+      "factor": 0.75,
+      "new_cpu": 6.0
+    },
+    {
+      "node": 13,
+      "old_cpu": 8.0,
+      "factor": 0.55,
+      "new_cpu": 4.4
+    },
+    {
+      "node": 14,
+      "old_cpu": 8.0,
+      "factor": 0.75,
+      "new_cpu": 6.0
+    },
+    {
+      "node": 15,
+      "old_cpu": 8.0,
+      "factor": 0.95,
+      "new_cpu": 7.6
+    },
+    {
+      "node": 16,
+      "old_cpu": 8.0,
+      "factor": 0.55,
+      "new_cpu": 4.4
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 1,
+      "old_bandwidth": 100.0,
+      "factor": 0.85,
+      "new_bandwidth": 85.0
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "old_bandwidth": 100.0,
+      "factor": 0.85,
+      "new_bandwidth": 85.0
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "old_bandwidth": 50.0,
+      "factor": 1.0,
+      "new_bandwidth": 50.0
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "old_bandwidth": 50.0,
+      "factor": 1.0,
+      "new_bandwidth": 50.0
+    },
+    {
+      "source": 1,
+      "target": 5,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 1,
+      "target": 6,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 1,
+      "target": 7,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "old_bandwidth": 50.0,
+      "factor": 1.0,
+      "new_bandwidth": 50.0
+    },
+    {
+      "source": 2,
+      "target": 4,
+      "old_bandwidth": 50.0,
+      "factor": 1.0,
+      "new_bandwidth": 50.0
+    },
+    {
+      "source": 2,
+      "target": 5,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 2,
+      "target": 6,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 2,
+      "target": 7,
+      "old_bandwidth": 50.0,
+      "factor": 0.85,
+      "new_bandwidth": 42.5
+    },
+    {
+      "source": 3,
+      "target": 8,
+      "old_bandwidth": 25.0,
+      "factor": 0.4,
+      "new_bandwidth": 10.0
+    },
+    {
+      "source": 3,
+      "target": 9,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 3,
+      "target": 10,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 3,
+      "target": 11,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 4,
+      "target": 8,
+      "old_bandwidth": 25.0,
+      "factor": 0.4,
+      "new_bandwidth": 10.0
+    },
+    {
+      "source": 4,
+      "target": 9,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 4,
+      "target": 10,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 4,
+      "target": 11,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 5,
+      "target": 12,
+      "old_bandwidth": 25.0,
+      "factor": 0.4,
+      "new_bandwidth": 10.0
+    },
+    {
+      "source": 5,
+      "target": 13,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 5,
+      "target": 14,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 5,
+      "target": 15,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 6,
+      "target": 12,
+      "old_bandwidth": 25.0,
+      "factor": 0.4,
+      "new_bandwidth": 10.0
+    },
+    {
+      "source": 6,
+      "target": 13,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 6,
+      "target": 14,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 6,
+      "target": 15,
+      "old_bandwidth": 25.0,
+      "factor": 0.85,
+      "new_bandwidth": 21.25
+    },
+    {
+      "source": 6,
+      "target": 16,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    },
+    {
+      "source": 7,
+      "target": 16,
+      "old_bandwidth": 25.0,
+      "factor": 0.7,
+      "new_bandwidth": 17.5
+    }
+  ]
+}

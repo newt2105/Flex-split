@@ -61,6 +61,14 @@ The settings can still be overridden from the command line:
 python ./run_model_pulp.py --network t2-16 --k-paths 10
 ```
 
+Use a generated heterogeneous topology without replacing the bundled JSON files:
+
+```bash
+python ./run_model_pulp.py --network t2-16 --k-paths 10 \
+  --topology-dir ../FlexRanSplitProblem/data_heterogeneous/network_16/placeran \
+  --results results_pulp_heterogeneous/t2-16/k_paths_10
+```
+
 Use Gurobi through either its Python API or command-line backend:
 
 ```bash

@@ -20,8 +20,9 @@ def parse_args():
 
 args = parse_args()
 network_size = int(args.network.rsplit("-", 1)[1])
-links_file = "model_files/T2_files/{}_CRs_links_LC.json".format(network_size)
-nodes_file = "model_files/T2_files/F1_{}_CRs_nodes_LC.json".format(network_size)
+links_file = args.topology_dir / f"{network_size}_CRs_links_LC.json"
+nodes_file = args.topology_dir / f"F1_{network_size}_CRs_nodes_LC.json"
+print("Topology directory:", args.topology_dir)
 
 paths = []
 k = 0

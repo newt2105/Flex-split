@@ -1,5 +1,6 @@
 import time
 import json
+from pathlib import Path as FilesystemPath
 
 try:
     from docplex.mp.model import Model
@@ -167,9 +168,20 @@ def read_topology_T1():
                 paths[path_id] = p
 
 
-def read_topology_T2(network_size=8):
-    links_file = 'model_files/T2_files/{}_CRs_links_LC.json'.format(network_size)
-    nodes_file = 'model_files/T2_files/F1_{}_CRs_nodes_LC.json'.format(network_size)
+def _topology_files_T2(network_size=8, topology_dir=None):
+    directory = (
+        FilesystemPath(topology_dir)
+        if topology_dir is not None
+        else FilesystemPath("model_files/T2_files")
+    )
+    return (
+        directory / f"{network_size}_CRs_links_LC.json",
+        directory / f"F1_{network_size}_CRs_nodes_LC.json",
+    )
+
+
+def read_topology_T2(network_size=8, topology_dir=None):
+    links_file, nodes_file = _topology_files_T2(network_size, topology_dir)
     with open(links_file) as json_file:
         data = json.load(json_file)
         json_links = data["links"]
@@ -284,10 +296,10 @@ def RU_location_T1():
     return rus
 
 
-def RU_location_T2(network_size=8):
+def RU_location_T2(network_size=8, topology_dir=None):
     rus = {}
     count = 1
-    nodes_file = 'model_files/T2_files/F1_{}_CRs_nodes_LC.json'.format(network_size)
+    _links_file, nodes_file = _topology_files_T2(network_size, topology_dir)
     with open(nodes_file) as json_file:
         data = json.load(json_file)
         json_crs = data["nodes"]

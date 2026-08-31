@@ -19,6 +19,16 @@ def _resolve_settings_path(value: Union[str, Path]) -> Path:
     return path if path.is_absolute() else Path.cwd() / path
 
 
+def _resolve_topology_directory(value: Union[str, Path]) -> Path:
+    path = Path(value).expanduser()
+    resolved = path if path.is_absolute() else Path.cwd() / path
+    if not resolved.is_dir():
+        raise FileNotFoundError(
+            f"Topology directory not found: {resolved.resolve()}"
+        )
+    return resolved.resolve()
+
+
 def _read_parser(path: Union[str, Path]) -> tuple[Path, configparser.ConfigParser]:
     resolved = _resolve_settings_path(path)
     if not resolved.is_file():
@@ -70,6 +80,12 @@ def add_settings_arguments(parser: argparse.ArgumentParser) -> None:
         help="override [network] name",
     )
     parser.add_argument(
+        "--topology-dir",
+        type=Path,
+        default=None,
+        help="directory containing PlaceRAN-compatible T2 node/link JSON files",
+    )
+    parser.add_argument(
         "--k-paths",
         type=int,
         default=None,
@@ -82,6 +98,11 @@ def resolve_settings(args: argparse.Namespace) -> Dict[str, object]:
     path_settings, configured_k_paths = load_path_settings(args.path_settings)
     network = args.network or configured_network
     k_paths = args.k_paths if args.k_paths is not None else configured_k_paths
+    topology_dir = (
+        _resolve_topology_directory(args.topology_dir)
+        if args.topology_dir is not None
+        else (PLACE_RAN_DIR / "model_files" / "T2_files").resolve()
+    )
     if k_paths < 1:
         raise ValueError("k_paths must be a positive integer")
     return {
@@ -89,4 +110,5 @@ def resolve_settings(args: argparse.Namespace) -> Dict[str, object]:
         "path_settings": path_settings,
         "network": network,
         "k_paths": k_paths,
+        "topology_dir": topology_dir,
     }

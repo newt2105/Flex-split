@@ -13,8 +13,9 @@ core = 0
 
 # Apply these factors repeatedly to sorted non-core nodes and physical links.
 # They match trung_run_ilp.py. Values must be greater than 0 and at most 1.
-node_cpu_factors = 0.55, 0.75, 0.95
-link_bw_factors = 0.40, 0.55, 0.70, 0.85
+node_cpu_factors = 1.0, 1.0, 0.18, 0.18, 0.75, 0.75, 0.95, 0.75, 0.55, 0.55, 0.75, 0.75, 0.55, 0.75, 0.95, 0.55
+
+link_bw_factors = 0.85, 0.85, 1.0, 1.0, 0.85, 0.85, 0.85, 1.0, 1.0, 0.85, 0.85, 0.85, 0.40, 0.70, 0.70, 0.85, 0.40, 0.70, 0.70, 0.85, 0.40, 0.70, 0.85, 0.85, 0.40, 0.70, 0.85, 0.85, 0.70, 0.70
 
 # false protects an existing generated dataset; true replaces it.
 overwrite = false
@@ -31,3 +32,6 @@ directory = FlexRanSplitProblem/data_heterogeneous
 # paths.pkl is unchanged because topology and delay are unchanged. Copying it
 # makes each generated network directory directly usable by run_ilp.py.
 copy_paths = true
+
+# Also create PlaceRAN-compatible node/link JSON files under network_X/placeran.
+write_placeran_json = true
