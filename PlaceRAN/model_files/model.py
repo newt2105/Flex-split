@@ -86,170 +86,103 @@ paths = {}
 conj_Fs = {}
 
 
-def read_topology_T1():
-    with open('model_files/T1_files/51_CRs_links_LC.json') as json_file:
-        data = json.load(json_file)
-        json_links = data["links"]
-        for item in json_links:
-            link = json_links[item]
-            source = link["source"]
-            destination = link["destination"]
-            split = str(source["node"]).rsplit('N', 1)
-            if source["node"] != "CN":
-                source_node = int(split[1])
-            else:
-                source_node = 0
-            split = str(destination["node"]).rsplit('N', 1)
-            if destination["node"] != "CN":
-                destination_node = int(split[1])
-            else:
-                destination_node = 0
-            capacity[(source_node, destination_node)] = int(str(link["linkCapacity"]))
-            delay[(source_node, destination_node)] = float(str(link["LinkDelay"]).replace(',', '.'))
-            if (source_node, destination_node) != '':
-                links.append((source_node, destination_node))
-            capacity[(destination_node, source_node)] = int(str(link["linkCapacity"]))
-            delay[(destination_node, source_node)] = float(str(link["LinkDelay"]).replace(',', '.'))
-            if (destination_node, source_node) != '':
-                links.append((destination_node, source_node))
-        with open('model_files/T1_files/R1_51_CRs_nodes_LC.json') as json_file:
-            data = json.load(json_file)
-            json_nodes = data["nodes"]
-            for item in json_nodes:
-                split = str(item).rsplit('-', 1)
-                CR_id = split[1]
-                node = json_nodes[item]
-                node_CPU = node["CPU"]
-                cr = CR(int(CR_id), node_CPU, 0)
-                crs[int(CR_id)] = cr
-        crs[0] = CR(0, 0, 0)
-        with open('paths.json') as json_paths_file:
-            json_paths_f = json.load(json_paths_file)
-            json_paths = json_paths_f["paths"]
-            for item in json_paths:
-                path = json_paths[item]
-                path_id = path["id"]
-                path_source = path["source"]
-                if path_source == "CN":
-                    path_source = 0
-                path_target = path["target"]
-                path_seq = path["seq"]
-                paths_p = [path["p1"], path["p2"], path["p3"]]
-                list_p1 = []
-                list_p2 = []
-                list_p3 = []
-                for path_p in paths_p:
-                    aux = ""
-                    sum_delay = 0
-                    for tup in path_p:
-                        aux += tup
-                        tup_aux = tup
-                        tup_aux = tup_aux.replace('(', '')
-                        tup_aux = tup_aux.replace(')', '')
-                        tup_aux = tuple(map(int, tup_aux.split(', ')))
-                        if path_p == path["p1"]:
-                            list_p1.append(tup_aux)
-                        elif path_p == path["p2"]:
-                            list_p2.append(tup_aux)
-                        elif path_p == path["p3"]:
-                            list_p3.append(tup_aux)
-                        sum_delay += float(str(delay[tup_aux]).replace(',', '.'))
-                    if path_p == path["p1"]:
-                        delay_p1 = sum_delay
-                    elif path_p == path["p2"]:
-                        delay_p2 = sum_delay
-                    elif path_p == path["p3"]:
-                        delay_p3 = sum_delay
-                    if path_seq[0] == 0:
-                        delay_p1 = 0
-                    if path_seq[1] == 0:
-                        delay_p2 = 0
-                p = Path(path_id, path_source, path_target, path_seq, list_p1, list_p2, list_p3, delay_p1, delay_p2, delay_p3)
-                paths[path_id] = p
-
-
-def _topology_files_T2(network_size=8, topology_dir=None):
+def topology_files(topology, network_size, ru_distribution, resource_level, topology_dir=None):
     directory = (
         FilesystemPath(topology_dir)
         if topology_dir is not None
-        else FilesystemPath("model_files/T2_files")
+        else FilesystemPath("model_files") / f"{topology}_files"
     )
     return (
-        directory / f"{network_size}_CRs_links_LC.json",
-        directory / f"F1_{network_size}_CRs_nodes_LC.json",
+        directory / f"{network_size}_CRs_links_{resource_level}.json",
+        directory / f"{ru_distribution}_{network_size}_CRs_nodes_{resource_level}.json",
     )
 
 
-def read_topology_T2(network_size=8, topology_dir=None):
-    links_file, nodes_file = _topology_files_T2(network_size, topology_dir)
+def _node_number(value):
+    return 0 if value == "CN" else int(str(value).rsplit("N", 1)[1])
+
+
+def _read_paths(paths_file):
+    with open(paths_file) as json_paths_file:
+        json_paths = json.load(json_paths_file)["paths"]
+    for item in json_paths:
+        path = json_paths[item]
+        path_id = path["id"]
+        path_source = 0 if path["source"] == "CN" else path["source"]
+        path_seq = path["seq"]
+        converted_segments = []
+        segment_delays = []
+        for segment in (path["p1"], path["p2"], path["p3"]):
+            converted = []
+            total_delay = 0.0
+            for edge_text in segment:
+                edge = tuple(map(int, edge_text.strip("()").split(", ")))
+                converted.append(edge)
+                reverse_edge = (edge[1], edge[0])
+                total_delay += float(delay[edge] if edge in delay else delay[reverse_edge])
+            converted_segments.append(converted)
+            segment_delays.append(total_delay)
+        p = Path(
+            path_id,
+            path_source,
+            path["target"],
+            path_seq,
+            *converted_segments,
+            *segment_delays,
+        )
+        paths[path_id] = p
+
+
+def read_topology(topology, network_size, ru_distribution, resource_level, topology_dir=None, paths_file="paths.json"):
+    links_file, nodes_file = topology_files(
+        topology, network_size, ru_distribution, resource_level, topology_dir
+    )
     with open(links_file) as json_file:
         data = json.load(json_file)
         json_links = data["links"]
-        for item in json_links:
-            link = item
-            source_node = link["fromNode"]
-            destination_node = link["toNode"]
-            if source_node < destination_node:
-                capacity[(source_node, destination_node)] = link["capacity"]
-                delay[(source_node, destination_node)] = link["delay"]
-                links.append((source_node, destination_node))
+        link_records = json_links.values() if topology == "T1" else json_links
+        for link in link_records:
+            if topology == "T1":
+                source_node = _node_number(link["source"]["node"])
+                destination_node = _node_number(link["destination"]["node"])
+                link_capacity = int(link["linkCapacity"])
+                link_delay = float(str(link["LinkDelay"]).replace(",", "."))
             else:
-                capacity[(destination_node, source_node)] = link["capacity"]
-                delay[(destination_node, source_node)] = link["delay"]
+                source_node = link["fromNode"]
+                destination_node = link["toNode"]
+                link_capacity = link["capacity"]
+                link_delay = link["delay"]
+            if topology == "T2" and source_node > destination_node:
+                source_node, destination_node = destination_node, source_node
+            capacity[(source_node, destination_node)] = link_capacity
+            delay[(source_node, destination_node)] = link_delay
+            links.append((source_node, destination_node))
+            if topology == "T1":
+                capacity[(destination_node, source_node)] = link_capacity
+                delay[(destination_node, source_node)] = link_delay
                 links.append((destination_node, source_node))
-        with open(nodes_file) as json_file:
-            data = json.load(json_file)
-            json_nodes = data["nodes"]
-            for item in json_nodes:
-                node = item
-                CR_id = node["nodeNumber"]
-                node_CPU = node["cpu"]
-                cr = CR(CR_id, node_CPU, 0)
-                crs[CR_id] = cr
-        crs[0] = CR(0, 0, 0)
-        with open('paths.json') as json_paths_file:
-            json_paths_f = json.load(json_paths_file)
-            json_paths = json_paths_f["paths"]
-            for item in json_paths:
-                path = json_paths[item]
-                path_id = path["id"]
-                path_source = path["source"]
-                if path_source == "CN":
-                    path_source = 0
-                path_target = path["target"]
-                path_seq = path["seq"]
-                paths_p = [path["p1"], path["p2"], path["p3"]]
-                list_p1 = []
-                list_p2 = []
-                list_p3 = []
-                for path_p in paths_p:
-                    aux = ""
-                    sum_delay = 0
-                    for tup in path_p:
-                        aux += tup
-                        tup_aux = tup
-                        tup_aux = tup_aux.replace('(', '')
-                        tup_aux = tup_aux.replace(')', '')
-                        tup_aux = tuple(map(int, tup_aux.split(', ')))
-                        if path_p == path["p1"]:
-                            list_p1.append(tup_aux)
-                        elif path_p == path["p2"]:
-                            list_p2.append(tup_aux)
-                        elif path_p == path["p3"]:
-                            list_p3.append(tup_aux)
-                        sum_delay += delay[tup_aux]
-                    if path_p == path["p1"]:
-                        delay_p1 = sum_delay
-                    elif path_p == path["p2"]:
-                        delay_p2 = sum_delay
-                    elif path_p == path["p3"]:
-                        delay_p3 = sum_delay
-                    if path_seq[0] == 0:
-                        delay_p1 = 0
-                    if path_seq[1] == 0:
-                        delay_p2 = 0
-                p = Path(path_id, path_source, path_target, path_seq, list_p1, list_p2, list_p3, delay_p1, delay_p2, delay_p3)
-                paths[path_id] = p
+
+    with open(nodes_file) as json_file:
+        json_nodes = json.load(json_file)["nodes"]
+        node_records = json_nodes.items() if topology == "T1" else ((None, node) for node in json_nodes)
+        for key, node in node_records:
+            cr_id = int(key.rsplit("-", 1)[1]) if topology == "T1" else node["nodeNumber"]
+            cpu = node["CPU"] if topology == "T1" else node["cpu"]
+            crs[cr_id] = CR(cr_id, cpu, 0)
+    crs[0] = CR(0, 0, 0)
+    _read_paths(paths_file)
+
+
+def read_topology_T1(ru_distribution="R1", resource_level="LC", topology_dir=None, paths_file="paths.json"):
+    read_topology("T1", 51, ru_distribution, resource_level, topology_dir, paths_file)
+
+
+def _topology_files_T2(network_size=8, topology_dir=None):
+    return topology_files("T2", network_size, "F1", "LC", topology_dir)
+
+
+def read_topology_T2(network_size=8, topology_dir=None, ru_distribution="F1", resource_level="LC", paths_file="paths.json"):
+    read_topology("T2", network_size, ru_distribution, resource_level, topology_dir, paths_file)
 
 
 def DRC_structure_T1():
@@ -280,37 +213,30 @@ def DRC_structure_T2():
     return DRCs
 
 
-def RU_location_T1():
+def RU_location(topology, network_size, ru_distribution, resource_level, topology_dir=None):
     rus = {}
     count = 1
-    with open('model_files/T1_files/R1_51_CRs_nodes_LC.json') as json_file:
-        data = json.load(json_file)
-        json_crs = data["nodes"]
-        for item in json_crs:
-            node = json_crs[item]
-            num_rus = node["RU"]
-            num_cr = str(item).split('-', 1)[1]
-            for i in range(0, num_rus):
-                rus[count] = RU(count, int(num_cr))
-                count += 1
-    return rus
-
-
-def RU_location_T2(network_size=8, topology_dir=None):
-    rus = {}
-    count = 1
-    _links_file, nodes_file = _topology_files_T2(network_size, topology_dir)
+    _links_file, nodes_file = topology_files(
+        topology, network_size, ru_distribution, resource_level, topology_dir
+    )
     with open(nodes_file) as json_file:
-        data = json.load(json_file)
-        json_crs = data["nodes"]
-        for item in json_crs:
-            node = item
+        json_crs = json.load(json_file)["nodes"]
+        node_records = json_crs.items() if topology == "T1" else ((None, node) for node in json_crs)
+        for key, node in node_records:
             num_rus = node["RU"]
-            num_cr = node["nodeNumber"]
-            for i in range(0, num_rus):
-                rus[count] = RU(count, int(num_cr))
+            cr_id = int(key.split("-", 1)[1]) if topology == "T1" else node["nodeNumber"]
+            for _ in range(num_rus):
+                rus[count] = RU(count, int(cr_id))
                 count += 1
     return rus
+
+
+def RU_location_T1(ru_distribution="R1", resource_level="LC", topology_dir=None):
+    return RU_location("T1", 51, ru_distribution, resource_level, topology_dir)
+
+
+def RU_location_T2(network_size=8, topology_dir=None, ru_distribution="F1", resource_level="LC"):
+    return RU_location("T2", network_size, ru_distribution, resource_level, topology_dir)
 
 
 DRC_f1 = 0

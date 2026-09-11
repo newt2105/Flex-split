@@ -52,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     for key, value in settings.items():
         setattr(parsed, key, value)
     if parsed.results is None:
-        parsed.results = DEFAULT_RESULTS_DIR / parsed.network / f"k_paths_{parsed.k_paths}"
+        parsed.results = DEFAULT_RESULTS_DIR / parsed.scenario / f"k_paths_{parsed.k_paths}"
     if parsed.csv is None:
         parsed.csv = parsed.results / "solution.csv"
     return parsed
@@ -101,18 +101,33 @@ def build_solver(
     return pulp.PULP_CBC_CMD(**options)
 
 
-def load_scenario(network: str, topology_dir: Path | None = None):
-    """Load one of the bundled T2/F1/LC network instances."""
-    network_size = int(network.rsplit("-", 1)[1])
+def load_scenario(
+    topology: str,
+    network_size: int,
+    ru_distribution: str,
+    resource_level: str,
+    topology_dir: Path,
+    paths_file: Path,
+):
+    """Load one bundled T1/T2, R1/F1 and LC/RC/HC instance."""
     placeran.links.clear()
     placeran.capacity.clear()
     placeran.delay.clear()
     placeran.crs.clear()
     placeran.paths.clear()
-    placeran.read_topology_T2(network_size, topology_dir)
-    return placeran.DRC_structure_T2(), placeran.RU_location_T2(
-        network_size, topology_dir
+    placeran.read_topology(
+        topology,
+        network_size,
+        ru_distribution,
+        resource_level,
+        topology_dir,
+        paths_file,
     )
+    drcs = placeran.DRC_structure_T1() if topology == "T1" else placeran.DRC_structure_T2()
+    rus = placeran.RU_location(
+        topology, network_size, ru_distribution, resource_level, topology_dir
+    )
+    return drcs, rus
 
 
 def path_matches_drc(path, drc) -> bool:
@@ -441,14 +456,21 @@ def print_detailed_solution(records: Sequence[Mapping[str, object]]) -> None:
 def main() -> None:
     args = parse_args()
     total_started = time.perf_counter()
-    print(f"Network settings: {args.network_settings}")
-    print(f"Path settings   : {args.path_settings}")
-    print(f"Network         : {args.network}")
-    print(f"Topology        : {args.topology_dir}")
+    print(f"Scenario        : {args.scenario}")
+    print(f"Network size    : {args.network_size}")
+    print(f"Topology files  : {args.topology_dir}")
+    print(f"Paths file      : {args.paths_file}")
     print(f"Paths per RU    : {args.k_paths}")
     solver_backend = select_solver_backend(args.solver)
     print(f"Solver          : {solver_backend}")
-    drcs, rus = load_scenario(args.network, args.topology_dir)
+    drcs, rus = load_scenario(
+        args.topology,
+        args.network_size,
+        args.ru_distribution,
+        args.resource_level,
+        args.topology_dir,
+        args.paths_file,
+    )
     candidates = candidate_assignments(drcs, rus)
     print(f"{len(candidates)} feasible path/DRC/RU assignments generated")
 
@@ -495,17 +517,20 @@ def main() -> None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backend_name = solver_backend.lower()
         result_path = results_dir / (
-            f"placeran_pulp_{backend_name}_{args.network}_{timestamp}.json"
+            f"placeran_pulp_{backend_name}_{args.scenario}_{timestamp}.json"
         )
         payload = {
             "method": "PlaceRAN",
             "backend": f"PuLP/{solver_backend}",
             "requested_solver": args.solver,
-            "scenario": args.network,
+            "scenario": args.scenario,
+            "topology": args.topology,
+            "ru_distribution": args.ru_distribution,
+            "resource_level": args.resource_level,
+            "network_size": args.network_size,
             "k_paths": args.k_paths,
-            "network_settings": str(args.network_settings),
-            "path_settings": str(args.path_settings),
             "topology_dir": str(args.topology_dir),
+            "paths_file": str(args.paths_file),
             "stage_1": {key: value for key, value in stage_1.items() if key != "selected"},
             "stage_2": {key: value for key, value in stage_2.items() if key != "selected"},
             "stage_3": {key: value for key, value in stage_3.items() if key != "selected"},

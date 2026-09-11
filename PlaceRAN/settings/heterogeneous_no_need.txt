@@ -1,0 +1,12 @@
+# PlaceRAN heterogeneous experiment settings
+
+[run]
+# Change only this value to run another generated network.
+network = 32
+k_paths = 10
+solver = gurobi
+solver_log = false
+
+# Relative paths are resolved from the PlaceRAN directory.
+topology_root = ../FlexRanSplitProblem/data_heterogeneous
+results_root = results_pulp_heterogeneous

@@ -1,114 +1,99 @@
-"""Shared settings loader for PlaceRAN path generation and optimization."""
+"""Shared command-line settings for PlaceRAN path generation and PuLP."""
 
 from __future__ import annotations
 
 import argparse
-import configparser
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict
 
 
 PLACE_RAN_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_NETWORK_SETTINGS = PLACE_RAN_DIR / "settings" / "network.txt"
-DEFAULT_PATH_SETTINGS = PLACE_RAN_DIR / "settings" / "path.txt"
+CASE_CHOICES = tuple(
+    f"{topology}-{ru}-{resource}"
+    for topology in ("T1", "T2")
+    for ru in ("R1", "F1")
+    for resource in ("LC", "RC", "HC")
+)
 NETWORK_CHOICES = ("t2-8", "t2-16", "t2-32", "t2-64", "t2-128", "t2-256")
+STANDARD_NETWORK_SIZES = {"T1": 51, "T2": 128}
 
 
-def _resolve_settings_path(value: Union[str, Path]) -> Path:
-    path = Path(value).expanduser()
-    return path if path.is_absolute() else Path.cwd() / path
+def parse_case(value: str) -> tuple[str, str, str]:
+    normalized = value.strip().upper()
+    if normalized not in CASE_CHOICES:
+        choices = ", ".join(CASE_CHOICES)
+        raise ValueError(f"case must be one of: {choices}")
+    topology, ru_distribution, resource_level = normalized.split("-")
+    return topology, ru_distribution, resource_level
 
 
-def _resolve_topology_directory(value: Union[str, Path]) -> Path:
-    path = Path(value).expanduser()
-    resolved = path if path.is_absolute() else Path.cwd() / path
+def _resolve_directory(value: Path | None, topology: str) -> Path:
+    path = value or PLACE_RAN_DIR / "model_files" / f"{topology}_files"
+    path = path.expanduser()
+    resolved = path if path.is_absolute() else PLACE_RAN_DIR / path
     if not resolved.is_dir():
-        raise FileNotFoundError(
-            f"Topology directory not found: {resolved.resolve()}"
-        )
+        raise FileNotFoundError(f"Topology directory not found: {resolved.resolve()}")
     return resolved.resolve()
 
 
-def _read_parser(path: Union[str, Path]) -> tuple[Path, configparser.ConfigParser]:
-    resolved = _resolve_settings_path(path)
-    if not resolved.is_file():
-        raise FileNotFoundError(f"Settings file not found: {resolved.resolve()}")
-    parser = configparser.ConfigParser()
-    with resolved.open("r", encoding="utf-8") as stream:
-        parser.read_file(stream)
-    return resolved.resolve(), parser
-
-
-def load_network_settings(path: Union[str, Path]) -> tuple[Path, str]:
-    resolved, parser = _read_parser(path)
-    if not parser.has_section("network") or not parser.has_option("network", "name"):
-        raise ValueError(f"Missing [network] name in {resolved}")
-    network = parser.get("network", "name").strip().lower()
-    if network not in NETWORK_CHOICES:
-        choices = ", ".join(NETWORK_CHOICES)
-        raise ValueError(f"[network] name must be one of: {choices}")
-    return resolved, network
-
-
-def load_path_settings(path: Union[str, Path]) -> tuple[Path, int]:
-    resolved, parser = _read_parser(path)
-    if not parser.has_section("paths") or not parser.has_option("paths", "k_paths"):
-        raise ValueError(f"Missing [paths] k_paths in {resolved}")
-    k_paths = parser.getint("paths", "k_paths")
-    if k_paths < 1:
-        raise ValueError("[paths] k_paths must be a positive integer")
-    return resolved, k_paths
+def _resolve_file(value: Path) -> Path:
+    path = value.expanduser()
+    return (path if path.is_absolute() else PLACE_RAN_DIR / path).resolve()
 
 
 def add_settings_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--network-settings",
-        type=Path,
-        default=DEFAULT_NETWORK_SETTINGS,
-        help=f"network settings file (default: {DEFAULT_NETWORK_SETTINGS})",
-    )
-    parser.add_argument(
-        "--path-settings",
-        type=Path,
-        default=DEFAULT_PATH_SETTINGS,
-        help=f"path settings file (default: {DEFAULT_PATH_SETTINGS})",
+        "--case",
+        default="T2-F1-LC",
+        help="scenario in the form T1-R1-LC (default: T2-F1-LC)",
     )
     parser.add_argument(
         "--network",
         choices=NETWORK_CHOICES,
         default=None,
-        help="override [network] name",
+        help="legacy/generated T2 size override, for example t2-32",
     )
     parser.add_argument(
         "--topology-dir",
         type=Path,
         default=None,
-        help="directory containing PlaceRAN-compatible T2 node/link JSON files",
+        help="directory containing matching PlaceRAN node/link JSON files",
     )
     parser.add_argument(
         "--k-paths",
         type=int,
-        default=None,
-        help="override [paths] k_paths",
+        default=10,
+        help="maximum number of physical core-to-RU paths (default: 10)",
+    )
+    parser.add_argument(
+        "--paths-file",
+        type=Path,
+        default=PLACE_RAN_DIR / "paths.json",
+        help="generated candidate-path JSON file",
     )
 
 
 def resolve_settings(args: argparse.Namespace) -> Dict[str, object]:
-    network_settings, configured_network = load_network_settings(args.network_settings)
-    path_settings, configured_k_paths = load_path_settings(args.path_settings)
-    network = args.network or configured_network
-    k_paths = args.k_paths if args.k_paths is not None else configured_k_paths
-    topology_dir = (
-        _resolve_topology_directory(args.topology_dir)
-        if args.topology_dir is not None
-        else (PLACE_RAN_DIR / "model_files" / "T2_files").resolve()
-    )
-    if k_paths < 1:
+    topology, ru_distribution, resource_level = parse_case(args.case)
+    network_size = STANDARD_NETWORK_SIZES[topology]
+
+    if args.network is not None:
+        if topology != "T2":
+            raise ValueError("--network can only be combined with a T2 case")
+        network_size = int(args.network.rsplit("-", 1)[1])
+
+    if args.k_paths < 1:
         raise ValueError("k_paths must be a positive integer")
+
+    scenario = f"{topology}-{ru_distribution}-{resource_level}"
     return {
-        "network_settings": network_settings,
-        "path_settings": path_settings,
-        "network": network,
-        "k_paths": k_paths,
-        "topology_dir": topology_dir,
+        "scenario": scenario,
+        "topology": topology,
+        "ru_distribution": ru_distribution,
+        "resource_level": resource_level,
+        "network_size": network_size,
+        "network": f"{topology.lower()}-{network_size}",
+        "k_paths": args.k_paths,
+        "topology_dir": _resolve_directory(args.topology_dir, topology),
+        "paths_file": _resolve_file(args.paths_file),
     }

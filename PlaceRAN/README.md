@@ -35,54 +35,72 @@ We also define different scenarios to the Radio Units (RUs) distribution named a
 
 ## Running with PuLP/CBC
 
-The original three-stage PlaceRAN formulation can also be solved with the
-open-source CBC backend. This preserves the PlaceRAN objectives and input data;
-only the modeling/solver backend changes. Edit `settings/network.txt` to select
-the network and `settings/path.txt` to set the maximum paths generated per RU.
+The original three-stage PlaceRAN formulation can be solved with PuLP and the
+open-source CBC backend. All standard experiments are controlled by one file:
+`settings/experiments.ini`.
 
 ```ini
-# settings/network.txt
-[network]
-name = t2-8
-
-# settings/path.txt
-[paths]
+# settings/experiments.ini
+[experiments]
+cases =
+    T1-R1-LC
+    T1-R1-RC
+    T1-R1-HC
+    T1-F1-LC
+    T1-F1-RC
+    T1-F1-HC
+    T2-R1-LC
+    T2-R1-RC
+    T2-R1-HC
+    T2-F1-LC
+    T2-F1-RC
+    T2-F1-HC
 k_paths = 10
+solver = cbc
+solver_log = false
+time_limit =
+stop_on_error = true
+results_root = results_pulp
 ```
 
-```bash
-python -m pip install -r requirements-pulp.txt
-python ./run_model_pulp.py
+On Windows PowerShell, run:
+
+```powershell
+cd D:\Code\flexransplit\PlaceRAN
+py -m pip install -r requirements-pulp.txt
+py .\run_experiments_pulp.py
 ```
 
-The settings can still be overridden from the command line:
+The cases are executed in the order in which they appear in the INI file.
+Comment out a case with `#` to skip it. Each scenario writes its own
+`solution.csv` and timestamped JSON file under
+`results_pulp/<CASE>/k_paths_<K>/`. A batch summary is written to
+`results_pulp/run_summary.csv`.
 
-```bash
-python ./run_model_pulp.py --network t2-16 --k-paths 10
+To run only one scenario without editing the batch settings:
+
+```powershell
+py .\run_model_pulp.py --case T1-R1-LC --k-paths 10 --solver cbc
 ```
 
-Use a generated heterogeneous topology without replacing the bundled JSON files:
+The low-level runner also supports generated T2 sizes for backward
+compatibility:
 
-```bash
-python ./run_model_pulp.py --network t2-16 --k-paths 10 \
-  --topology-dir ../FlexRanSplitProblem/data_heterogeneous/network_16/placeran \
-  --results results_pulp_heterogeneous/t2-16/k_paths_10
+```powershell
+py .\run_model_pulp.py --case T2-F1-LC --network t2-16 --k-paths 10 `
+  --topology-dir ..\FlexRanSplitProblem\data_heterogeneous\network_16\placeran `
+  --results results_pulp_heterogeneous\t2-16\k_paths_10
 ```
 
 Use Gurobi through either its Python API or command-line backend:
 
-```bash
-python ./run_model_pulp.py --solver gurobi --solver-log
+```powershell
+py .\run_model_pulp.py --case T2-F1-LC --solver gurobi --solver-log
 ```
 
 `--solver auto` prefers Gurobi when available and otherwise uses CBC.
-
-Available values are `t2-8`, `t2-16`, `t2-32`, `t2-64`, `t2-128`, and
-`t2-256`. The default is `t2-8`.
-
-Use `--solver-log` to display CBC's log. The final RU/path/DRC placement is
-printed to the terminal. CSV and JSON results are saved under
-`results_pulp/<network>/k_paths_<k>/`.
+Use `solver_log = true` to display the solver log. The final RU/path/DRC
+placement is printed to the terminal.
 
 The primary `solution.csv` uses the same schema as FlexRanSplitProblem:
 
