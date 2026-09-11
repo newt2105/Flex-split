@@ -40,16 +40,23 @@ def save_sol(lp: pulp.LpProblem, filepath: Path) -> None:
                 stream.write(f"{variable.name} {variable.varValue}\n")
 
 
-def build_solver(name: str, msg: bool) -> pulp.LpSolver:
+def build_solver(
+    name: str,
+    msg: bool,
+    time_limit: float | None = None,
+) -> pulp.LpSolver:
+    options = {"msg": msg}
+    if time_limit is not None:
+        options["timeLimit"] = time_limit
     if name == "cbc":
-        return pulp.PULP_CBC_CMD(msg=msg)
+        return pulp.PULP_CBC_CMD(**options)
     if name == "gurobi":
-        return pulp.GUROBI_CMD(msg=msg)
+        return pulp.GUROBI_CMD(**options)
 
     available = set(pulp.listSolvers(onlyAvailable=True))
     if "GUROBI_CMD" in available:
-        return pulp.GUROBI_CMD(msg=msg)
-    return pulp.PULP_CBC_CMD(msg=msg)
+        return pulp.GUROBI_CMD(**options)
+    return pulp.PULP_CBC_CMD(**options)
 
 
 def _resolve_repo_path(value: str | Path) -> Path:

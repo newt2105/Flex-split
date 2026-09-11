@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import pickle
 from pathlib import Path as FilePath
@@ -14,23 +13,41 @@ import networkx as nx
 from .path_model import Path
 
 
-def build_graph_from_links(links_json: str) -> nx.Graph:
+def _parse_t1_node(value: str) -> int:
+    return 0 if value == "CN" else int(str(value).rsplit("N", 1)[1])
+
+
+def build_graph_from_links(links_json: str, topology: str = "T2") -> nx.Graph:
     graph = nx.Graph()
     with open(links_json, "r", encoding="utf-8") as stream:
         data = json.load(stream)
 
-    for link in data["links"]:
-        graph.add_edge(
-            int(link["fromNode"]),
-            int(link["toNode"]),
-            delay=float(link["delay"]),
-        )
+    if topology == "T1":
+        for link in data["links"].values():
+            graph.add_edge(
+                _parse_t1_node(link["source"]["node"]),
+                _parse_t1_node(link["destination"]["node"]),
+                delay=float(str(link["LinkDelay"]).replace(",", ".")),
+            )
+    else:
+        for link in data["links"]:
+            graph.add_edge(
+                int(link["fromNode"]),
+                int(link["toNode"]),
+                delay=float(link["delay"]),
+            )
     return graph
 
 
-def load_ru_nodes(nodes_json: str) -> List[int]:
+def load_ru_nodes(nodes_json: str, topology: str = "T2") -> List[int]:
     with open(nodes_json, "r", encoding="utf-8") as stream:
         data = json.load(stream)
+    if topology == "T1":
+        return [
+            int(key.rsplit("-", 1)[1])
+            for key, node in data["nodes"].items()
+            if int(node["RU"]) > 0
+        ]
     return [
         int(node["nodeNumber"])
         for node in data["nodes"]
@@ -52,6 +69,7 @@ def generate_paths(
     core_id: int = 0,
     k_paths: int = 4,
     output_path: str | None = None,
+    topology: str = "T2",
 ) -> List[Path]:
     """Generate up to ``k_paths`` latency-shortest physical paths per RU node.
 
@@ -62,19 +80,26 @@ def generate_paths(
     if k_paths < 1:
         raise ValueError("k_paths must be at least 1")
 
-    graph = build_graph_from_links(links_json)
+    topology = topology.strip().upper()
+    if topology not in {"T1", "T2"}:
+        raise ValueError("topology must be T1 or T2")
+
+    graph = build_graph_from_links(links_json, topology)
     paths: List[Path] = []
     path_id = 1
 
-    for ru_node in load_ru_nodes(nodes_json):
+    for ru_node in load_ru_nodes(nodes_json, topology):
         candidates = nx.shortest_simple_paths(
             graph,
             core_id,
             ru_node,
             weight="delay",
         )
-        for node_sequence in itertools.islice(candidates, k_paths):
+        accepted = 0
+        for node_sequence in candidates:
             nodes = list(node_sequence)
+            if len(nodes) > 3 and 1 in nodes and 2 in nodes:
+                continue
             edges = edges_from_nodes(nodes)
             paths.append(
                 Path(
@@ -84,6 +109,9 @@ def generate_paths(
                 )
             )
             path_id += 1
+            accepted += 1
+            if accepted == k_paths:
+                break
 
     if output_path is not None:
         destination = FilePath(output_path)
@@ -102,6 +130,7 @@ def main() -> None:
     parser.add_argument("--nodes", required=True, help="Physical-node/RU JSON")
     parser.add_argument("--core", type=int, default=0, help="Core node ID")
     parser.add_argument("--k-paths", type=int, default=4)
+    parser.add_argument("--topology", choices=("T1", "T2"), default="T2")
     parser.add_argument("--out", required=True, help="Output pickle path")
     args = parser.parse_args()
 
@@ -111,6 +140,7 @@ def main() -> None:
         core_id=args.core,
         k_paths=args.k_paths,
         output_path=args.out,
+        topology=args.topology,
     )
     print(f"Generated {len(paths)} physical paths in {FilePath(args.out).resolve()}")
 
