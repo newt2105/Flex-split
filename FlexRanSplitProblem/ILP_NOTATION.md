@@ -13,8 +13,8 @@ Tài liệu này ánh xạ trực tiếp Section III-IV của bài báo sang
 | \(\mathcal S\) | Các NSC; mỗi NSC ứng với một RU | `problem.S` |
 | \(\mathcal K\) | Các DRC khả dụng | `problem.K` |
 | \(\mathcal P_s\) | Path vật lý từ core đến RU của NSC \(s\) | `problem.paths_for_slice(s)` |
-| \(\mathcal N_s\) | `vupf`, `vcu`, `vdu`, `vru` | `problem.V` |
-| \(\mathcal E_s\) | `vupf->vcu`, `vcu->vdu`, `vdu->vru` | `problem.virtual_links` |
+| \(\mathcal N_{s,k}\) | Các VNF thực sự tồn tại trong DRC \(k\) | `problem.active_vnfs(k)` |
+| \(\mathcal E_{s,k}\) | Chuỗi virtual link sau khi bỏ CU/DU có CPU bằng 0 | `problem.active_virtual_links(k)` |
 | \(A_i\) | Capacity của node \(i\) | `node_cpu_cap(PHY, i)` |
 | \(A_{ij}\) | Bandwidth của link \(ij\) | `edge_bw_cap(PHY, (i, j))` |
 | \(R_{s,k,v}\) | Resource của VNF \(v\) với DRC \(k\) | `problem.node_req(s, k, v)` |
@@ -37,6 +37,12 @@ hoặc tập 9 DRC hiện có của `DRC_structure_T2()`.
 Mô hình không còn dùng `adm`, `theta` hoặc gán sẵn vị trí CU/DU trong một
 path. Path chỉ là một chuỗi node vật lý; vị trí VNF do `x_node` quyết định.
 
+Chuỗi VNF phụ thuộc vào DRC:
+
+- CU và DU đều có tài nguyên: `vupf -> vcu -> vdu -> vru`.
+- CU bằng 0: `vupf -> vdu -> vru` (dùng bandwidth MH rồi FH).
+- CU và DU đều bằng 0: `vupf -> vru` (dùng bandwidth FH).
+
 ## Constraints
 
 - **C1 / (4):** mỗi NSC chọn đúng một DRC.
@@ -45,8 +51,10 @@ path. Path chỉ là một chuỗi node vật lý; vị trí VNF do `x_node` quy
   trong `pi`. Bản PDF thiếu liên kết này; nếu không thêm, hai quyết định có thể
   chọn hai DRC khác nhau.
 - **C3 / (6):** `vupf` cố định tại core và `vru` cố định tại RU.
-- **C4 / (7):** mỗi VNF nằm trên đúng một node của path đã chọn.
-- **C5 / (8):** hai VNF của cùng NSC không được dùng chung một physical node.
+- **C4 / (7):** mỗi VNF đang hoạt động nằm trên đúng một node của path đã chọn.
+  `vcu` hoặc `vdu` có CPU bằng 0 trong DRC sẽ không được tạo biến placement.
+- **C5 / (8):** hai VNF đang hoạt động của cùng NSC không được dùng chung một
+  physical node. Các VNF không tồn tại trong DRC không tham gia constraint này.
 - **C6 / (9):** tổng node resource và link bandwidth không vượt capacity.
 - **C7 / (10):** flow conservation cho từng virtual link.
 - **C8 / (11):** tắt các biến link mapping của path không được chọn.

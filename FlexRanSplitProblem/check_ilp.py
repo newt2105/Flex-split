@@ -298,21 +298,23 @@ def check_solution(
         selected_drcs.add(item["drc"])
         nodes = item["path_nodes"]
         placement = item["vnf_placement"]
+        active_vnfs = problem.active_vnfs(item["drc"])
+        active_links = problem.active_virtual_links(item["drc"])
         positions = [
             nodes.index(placement[vnf])
-            for vnf in ("vupf", "vcu", "vdu", "vru")
+            for vnf in active_vnfs
         ]
 
         if placement["vupf"] != problem.core:
             errors.append(f"NSC {slice_id}: vupf is not at the core")
         if placement["vru"] != problem.ru_location(slice_id):
             errors.append(f"NSC {slice_id}: vru is not at the RU endpoint")
-        if positions != sorted(positions) or len(set(positions)) != 4:
+        if positions != sorted(positions) or len(set(positions)) != len(active_vnfs):
             errors.append(f"NSC {slice_id}: VNF placement order is invalid")
 
-        for source, target, _segment in problem.virtual_links:
-            start = positions[("vupf", "vcu", "vdu", "vru").index(source)]
-            end = positions[("vupf", "vcu", "vdu", "vru").index(target)]
+        for source, target, _segment in active_links:
+            start = nodes.index(placement[source])
+            end = nodes.index(placement[target])
             expected = [list(edge) for edge in zip(nodes[start:end], nodes[start + 1:end + 1])]
             actual = item["virtual_link_mapping"][f"{source}->{target}"]
             if actual != expected:

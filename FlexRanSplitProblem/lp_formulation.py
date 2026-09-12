@@ -62,7 +62,8 @@ def formulateLp(
     S = tuple(problem.S)
     K = tuple(problem.K)
     V = tuple(problem.V)
-    virtual_links = tuple(problem.virtual_links)
+    active_vnfs_by_drc = {k: problem.active_vnfs(k) for k in K}
+    active_links_by_drc = {k: problem.active_virtual_links(k) for k in K}
     paths_by_slice = {s: tuple(problem.paths_for_slice(s)) for s in S}
     path_by_key = {
         (s, p.id): p
@@ -112,7 +113,7 @@ def formulateLp(
         for k in K
         for p in paths_by_slice[s]
         for i in nodes_by_path[(s, p.id)]
-        for v in V
+        for v in active_vnfs_by_drc[k]
     ]
     x_node = pulp.LpVariable.dicts("x_node", x_node_keys, cat=pulp.LpBinary)
 
@@ -122,7 +123,7 @@ def formulateLp(
         for k in K
         for p in paths_by_slice[s]
         for i, j in arcs_by_path[(s, p.id)]
-        for v, w, _segment in virtual_links
+        for v, w, _segment in active_links_by_drc[k]
     ]
     x_link = pulp.LpVariable.dicts("x_link", x_link_keys, cat=pulp.LpBinary)
 
@@ -175,7 +176,7 @@ def formulateLp(
         for k in K:
             for p in paths_by_slice[s]:
                 selected = y[(s, k, p.id)]
-                for v in V:
+                for v in active_vnfs_by_drc[k]:
                     lp += (
                         pulp.lpSum(
                             x_node[(s, k, p.id, i, v)]
@@ -194,7 +195,7 @@ def formulateLp(
                     lp += (
                         pulp.lpSum(
                             x_node[(s, k, p.id, i, v)]
-                            for v in V
+                            for v in active_vnfs_by_drc[k]
                         )
                         <= selected,
                         f"C5_one_vnf_{s}_{k}_{p.id}_{i}",
@@ -208,7 +209,7 @@ def formulateLp(
                 for p in paths_by_slice[s]:
                     if i not in nodes_by_path[(s, p.id)]:
                         continue
-                    for v in V:
+                    for v in active_vnfs_by_drc[k]:
                         requirement = problem.node_req(s, k, v)
                         if requirement:
                             terms.append(
@@ -237,7 +238,7 @@ def formulateLp(
         terms = []
         for s, pid, i, j in arcs_using_edge.get(edge, []):
             for k in K:
-                for v, w, segment in virtual_links:
+                for v, w, segment in active_links_by_drc[k]:
                     requirement = problem.link_req(s, k, segment)
                     if requirement:
                         terms.append(
@@ -254,7 +255,7 @@ def formulateLp(
             for p in paths_by_slice[s]:
                 pid = p.id
                 arcs = arcs_by_path[(s, pid)]
-                for v, w, _segment in virtual_links:
+                for v, w, _segment in active_links_by_drc[k]:
                     for i in nodes_by_path[(s, pid)]:
                         outgoing = pulp.lpSum(
                             x_link[(s, k, pid, a, b, v, w)]
@@ -328,7 +329,8 @@ def formulateLp(
         "S": S,
         "K": K,
         "V": V,
-        "virtual_links": virtual_links,
+        "active_vnfs_by_drc": active_vnfs_by_drc,
+        "active_links_by_drc": active_links_by_drc,
         "paths_by_slice": paths_by_slice,
         "path_by_key": path_by_key,
         "nodes_by_path": nodes_by_path,
@@ -357,6 +359,8 @@ def extract_solution(
     paths_by_slice = sets["paths_by_slice"]
     nodes_by_path = sets["nodes_by_path"]
     arcs_by_path = sets["arcs_by_path"]
+    active_vnfs_by_drc = sets["active_vnfs_by_drc"]
+    active_links_by_drc = sets["active_links_by_drc"]
 
     solution: List[Dict[str, Any]] = []
     for s in sets["S"]:
@@ -389,7 +393,7 @@ def extract_solution(
         k, p = chosen
         pid = p.id
         placement = {}
-        for v in sets["V"]:
+        for v in active_vnfs_by_drc[k]:
             placement[v] = next(
                 i
                 for i in nodes_by_path[(s, pid)]
@@ -397,7 +401,7 @@ def extract_solution(
             )
 
         link_mapping = {}
-        for v, w, _segment in sets["virtual_links"]:
+        for v, w, _segment in active_links_by_drc[k]:
             link_mapping[f"{v}->{w}"] = [
                 [i, j]
                 for i, j in arcs_by_path[(s, pid)]

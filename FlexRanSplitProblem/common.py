@@ -25,6 +25,8 @@ class FlexRanSplitProblem:
 
     Public set names mirror the paper: ``N``, ``E``, ``S``, ``K``, ``V``,
     ``virtual_links``, and ``paths_for_slice(s)`` (the set :math:`P_s`).
+    ``active_vnfs(k)`` and ``active_virtual_links(k)`` provide the actual
+    service chain of DRC ``k`` after zero-resource CU/DU stages are removed.
     The older attribute names remain as aliases for the RL code.
     """
 
@@ -84,6 +86,39 @@ class FlexRanSplitProblem:
         """Legacy per-segment delay bound retained for RL compatibility."""
         del slice_id
         return float(_delay_req(self.drcs[drc_id], segment))
+
+    def active_vnfs(self, drc_id: int) -> Tuple[str, ...]:
+        """Return only the VNF stages that exist for one DRC.
+
+        ``vupf`` is retained as the fixed transport anchor at the core and
+        ``vru`` as the RU endpoint.  A CU or DU with zero CPU requirement is
+        absent from the service chain and therefore has no placement variable.
+        """
+        drc = self.drcs[drc_id]
+        active = ["vupf"]
+        if float(drc.cpu_CU) > 0.0:
+            active.append("vcu")
+        if float(drc.cpu_DU) > 0.0:
+            active.append("vdu")
+        active.append("vru")
+        return tuple(active)
+
+    def active_virtual_links(
+        self,
+        drc_id: int,
+    ) -> Tuple[Tuple[str, str, str], ...]:
+        """Return the DRC-specific chain and its BH/MH/FH resource labels."""
+        active = self.active_vnfs(drc_id)
+        links = []
+        previous = "vupf"
+        if "vcu" in active:
+            links.append((previous, "vcu", "BH"))
+            previous = "vcu"
+        if "vdu" in active:
+            links.append((previous, "vdu", "MH"))
+            previous = "vdu"
+        links.append((previous, "vru", "FH"))
+        return tuple(links)
 
     # ------------------------------------------------------------------
     # Physical path helpers.

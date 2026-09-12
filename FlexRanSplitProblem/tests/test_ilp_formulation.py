@@ -6,7 +6,7 @@ import pulp
 from FlexRanSplitProblem.common import FlexRanSplitProblem
 from FlexRanSplitProblem.lp_formulation import extract_solution, formulateLp
 from FlexRanSplitProblem.phy.path_model import Path
-from FlexRanSplitProblem.phy.ran_model import DRC, RU
+from FlexRanSplitProblem.phy.ran_model import DRC, RU, DRC_structure_T1
 
 
 def make_drc(drc_id: int) -> DRC:
@@ -26,6 +26,32 @@ def make_drc(drc_id: int) -> DRC:
         delay_FH=10.0,
         bw_BH=1.0,
         bw_MH=1.0,
+        bw_FH=1.0,
+    )
+
+
+def make_reduced_drc(
+    drc_id: int,
+    *,
+    cpu_cu: float,
+    cpu_du: float,
+) -> DRC:
+    return DRC(
+        id=drc_id,
+        cpu_CU=cpu_cu,
+        cpu_DU=cpu_du,
+        cpu_RU=1.0,
+        ram_CU=0.0,
+        ram_DU=0.0,
+        ram_RU=0.0,
+        Fs_CU=[] if cpu_cu == 0 else ["f8"],
+        Fs_DU=[] if cpu_du == 0 else ["f7"],
+        Fs_RU=["f6"],
+        delay_BH=0.0 if cpu_cu == 0 else 10.0,
+        delay_MH=0.0 if cpu_du == 0 else 10.0,
+        delay_FH=10.0,
+        bw_BH=0.0 if cpu_cu == 0 else 1.0,
+        bw_MH=0.0 if cpu_du == 0 else 1.0,
         bw_FH=1.0,
     )
 
@@ -130,3 +156,70 @@ def test_legacy_placement_paths_are_deduplicated_by_node_sequence() -> None:
     assert [path.id for path in problem.paths_for_slice(1)] == [1, 2]
     model = formulateLp(problem)
     assert all(key[2] != 3 for key in model._vars["y"])
+
+
+def test_zero_cpu_cu_is_not_mapped_and_three_node_path_is_feasible() -> None:
+    graph = nx.DiGraph()
+    for node in (0, 1, 4):
+        graph.add_node(node, cpu=0.0 if node == 0 else 10.0)
+    add_bidirectional_edge(graph, 0, 1, 1.0)
+    add_bidirectional_edge(graph, 1, 4, 1.0)
+
+    problem = FlexRanSplitProblem(
+        physical_network=graph,
+        paths=[Path(id=1, nodes=[0, 1, 4], latency=2.0)],
+        rus={1: RU(id=1, cr=4)},
+        drcs={6: make_reduced_drc(6, cpu_cu=0.0, cpu_du=1.0)},
+        core_id=0,
+        name="three_node_reduced_chain",
+    )
+    model = formulateLp(problem)
+    solve(model)
+
+    assert not any(key[-1] == "vcu" for key in model._vars["x_node"])
+    item = extract_solution(problem, model)[0]
+    assert item["vnf_placement"] == {"vupf": 0, "vdu": 1, "vru": 4}
+    assert item["virtual_link_mapping"] == {
+        "vupf->vdu": [[0, 1]],
+        "vdu->vru": [[1, 4]],
+    }
+
+
+def test_real_drcs_produce_the_expected_active_chains() -> None:
+    problem = build_single_slice_problem()
+    problem.drcs = DRC_structure_T1()
+
+    assert problem.active_vnfs(1) == ("vupf", "vcu", "vdu", "vru")
+    assert problem.active_vnfs(6) == ("vupf", "vdu", "vru")
+    assert problem.active_virtual_links(6) == (
+        ("vupf", "vdu", "MH"),
+        ("vdu", "vru", "FH"),
+    )
+    assert problem.active_vnfs(8) == ("vupf", "vru")
+    assert problem.active_virtual_links(8) == (("vupf", "vru", "FH"),)
+
+
+def test_zero_cpu_cu_and_du_are_not_mapped_on_two_node_path() -> None:
+    graph = nx.DiGraph()
+    graph.add_node(0, cpu=0.0)
+    graph.add_node(4, cpu=10.0)
+    add_bidirectional_edge(graph, 0, 4, 1.0)
+
+    problem = FlexRanSplitProblem(
+        physical_network=graph,
+        paths=[Path(id=1, nodes=[0, 4], latency=1.0)],
+        rus={1: RU(id=1, cr=4)},
+        drcs={8: make_reduced_drc(8, cpu_cu=0.0, cpu_du=0.0)},
+        core_id=0,
+        name="two_node_ru_only_chain",
+    )
+    model = formulateLp(problem)
+    solve(model)
+
+    assert not any(
+        key[-1] in {"vcu", "vdu"}
+        for key in model._vars["x_node"]
+    )
+    item = extract_solution(problem, model)[0]
+    assert item["vnf_placement"] == {"vupf": 0, "vru": 4}
+    assert item["virtual_link_mapping"] == {"vupf->vru": [[0, 4]]}
