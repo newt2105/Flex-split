@@ -1,0 +1,17 @@
+# PlaceRAN single-network configuration.
+# Change only "name" to switch between t2-8, t2-16, t2-32, t2-64,
+# t2-128, t2-256, and t1-51.
+
+[network]
+name = t2-8
+ru_distribution = F1
+resource_level = LC
+k_paths = 2
+solver = gurobi
+solver_log = false
+
+# Empty means no time limit for each optimization stage.
+time_limit =
+
+# Relative paths are resolved from the PlaceRAN directory.
+results_root = results_pulp

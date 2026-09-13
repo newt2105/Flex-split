@@ -1,5 +1,0 @@
-# PlaceRAN network configuration
-
-[network]
-# Available: t2-8, t2-16, t2-32, t2-64, t2-128, t2-256
-name = t2-8

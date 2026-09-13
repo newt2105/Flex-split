@@ -98,6 +98,29 @@ Use Gurobi through either its Python API or command-line backend:
 py .\run_model_pulp.py --case T2-F1-LC --solver gurobi --solver-log
 ```
 
+### Run one network from `settings/network.txt`
+
+Edit only `settings/network.txt`, for example:
+
+```ini
+[network]
+name = t2-8
+ru_distribution = F1
+resource_level = LC
+k_paths = 2
+solver = gurobi
+```
+
+Then run:
+
+```powershell
+py .\run_model_pulp.py
+```
+
+Supported network names are `t1-51`, `t2-8`, `t2-16`, `t2-32`, `t2-64`,
+`t2-128`, and `t2-256`. Results are separated by network size, for example
+`results_pulp/T2-F1-LC-8/k_paths_2`.
+
 `--solver auto` prefers Gurobi when available and otherwise uses CBC.
 Use `solver_log = true` to display the solver log. The final RU/path/DRC
 placement is printed to the terminal.
