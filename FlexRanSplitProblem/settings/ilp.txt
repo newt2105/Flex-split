@@ -7,13 +7,17 @@
 
 [input]
 # Select one generated T2 network: 8, 16, 32, 64, 128, or 256.
-network = 16
+network = 128
 profile = LC
 
 # Paths are derived automatically. Uncomment only when using custom files.
-phy = FlexRanSplitProblem/data_heterogeneous/network_{network}/phy.pkl
-paths = FlexRanSplitProblem/data_heterogeneous/network_{network}/paths.pkl
-nodes = FlexRanSplitProblem/data_heterogeneous/network_{network}/nodes.json
+# phy = FlexRanSplitProblem/data_heterogeneous/network_{network}/phy.pkl
+# paths = FlexRanSplitProblem/data_heterogeneous/network_{network}/paths.pkl
+# nodes = FlexRanSplitProblem/data_heterogeneous/network_{network}/nodes.json
+phy = FlexRanSplitProblem/data/network_{network}/phy.pkl
+paths = FlexRanSplitProblem/data/network_{network}/paths.pkl
+nodes = FlexRanSplitProblem/model_files/T2_files/F1_{network}_CRs_nodes_{profile}.json
+
 
 [model]
 core = 0
@@ -25,8 +29,10 @@ name = auto
 log = false
 
 [output]
-directory = FlexRanSplitProblem/results_heterogeneous/network_{network}
-csv = FlexRanSplitProblem/results_heterogeneous/network_{network}/solution.csv
+# directory = FlexRanSplitProblem/results_heterogeneous/network_{network}
+# csv = FlexRanSplitProblem/results_heterogeneous/network_{network}/solution.csv
+directory = FlexRanSplitProblem/results/network_{network}
+csv = FlexRanSplitProblem/results/network_{network}/solution.csv
 
 # false replaces the CSV on every run; true appends run history.
 append = false

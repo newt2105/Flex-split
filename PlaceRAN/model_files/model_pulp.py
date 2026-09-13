@@ -38,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--solver",
         choices=("auto", "cbc", "gurobi"),
-        default="cbc",
+        default="gurobi",
         help="solver backend (default: cbc)",
     )
     parser.add_argument("--solver-log", action="store_true", help="Show the solver log")

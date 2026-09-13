@@ -3,10 +3,10 @@
 # t2-128, t2-256, and t1-51.
 
 [network]
-name = t2-8
+name = t2-256
 ru_distribution = F1
 resource_level = LC
-k_paths = 2
+k_paths = 10
 solver = gurobi
 solver_log = false
 

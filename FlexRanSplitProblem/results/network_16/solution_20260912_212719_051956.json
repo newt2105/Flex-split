@@ -1,0 +1,513 @@
+{
+  "objective": 3.837513935340022,
+  "beta": 0.5,
+  "slices": [
+    {
+      "slice": 1,
+      "ru": 1,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 1,
+      "path_nodes": [
+        0,
+        1,
+        3
+      ],
+      "latency": 0.622,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 3
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 2,
+      "ru": 2,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 11,
+      "path_nodes": [
+        0,
+        1,
+        4
+      ],
+      "latency": 0.6859999999999999,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 4
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 3,
+      "ru": 3,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 21,
+      "path_nodes": [
+        0,
+        1,
+        5
+      ],
+      "latency": 0.622,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 5
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 4,
+      "ru": 4,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 31,
+      "path_nodes": [
+        0,
+        1,
+        6
+      ],
+      "latency": 0.6859999999999999,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 6
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 5,
+      "ru": 5,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 41,
+      "path_nodes": [
+        0,
+        1,
+        7
+      ],
+      "latency": 0.622,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 7
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 6,
+      "ru": 6,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 51,
+      "path_nodes": [
+        0,
+        1,
+        3,
+        8
+      ],
+      "latency": 0.909,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 8
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            3
+          ],
+          [
+            3,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 7,
+      "ru": 7,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 61,
+      "path_nodes": [
+        0,
+        1,
+        4,
+        9
+      ],
+      "latency": 0.9729999999999999,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 9
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            9
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 8,
+      "ru": 8,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 71,
+      "path_nodes": [
+        0,
+        1,
+        3,
+        10
+      ],
+      "latency": 0.909,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 10
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            3
+          ],
+          [
+            3,
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 9,
+      "ru": 9,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 81,
+      "path_nodes": [
+        0,
+        1,
+        4,
+        11
+      ],
+      "latency": 0.9729999999999999,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 4,
+        "vru": 11
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            4
+          ]
+        ],
+        "vdu->vru": [
+          [
+            4,
+            11
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 10,
+      "ru": 10,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 91,
+      "path_nodes": [
+        0,
+        1,
+        5,
+        12
+      ],
+      "latency": 0.909,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 5,
+        "vru": 12
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            5
+          ]
+        ],
+        "vdu->vru": [
+          [
+            5,
+            12
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 11,
+      "ru": 11,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 101,
+      "path_nodes": [
+        0,
+        1,
+        5,
+        13
+      ],
+      "latency": 1.123,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 5,
+        "vru": 13
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            5
+          ]
+        ],
+        "vdu->vru": [
+          [
+            5,
+            13
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 12,
+      "ru": 12,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 111,
+      "path_nodes": [
+        0,
+        1,
+        5,
+        14
+      ],
+      "latency": 0.909,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 1,
+        "vru": 14
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ]
+        ],
+        "vdu->vru": [
+          [
+            1,
+            5
+          ],
+          [
+            5,
+            14
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 13,
+      "ru": 13,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 121,
+      "path_nodes": [
+        0,
+        1,
+        5,
+        15
+      ],
+      "latency": 1.123,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 5,
+        "vru": 15
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            5
+          ]
+        ],
+        "vdu->vru": [
+          [
+            5,
+            15
+          ]
+        ]
+      }
+    },
+    {
+      "slice": 14,
+      "ru": 14,
+      "deployed": 1,
+      "admitted": 1,
+      "drc": 10,
+      "path": 131,
+      "path_nodes": [
+        0,
+        1,
+        7,
+        16
+      ],
+      "latency": 0.909,
+      "vnf_placement": {
+        "vupf": 0,
+        "vdu": 7,
+        "vru": 16
+      },
+      "virtual_link_mapping": {
+        "vupf->vdu": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "vdu->vru": [
+          [
+            7,
+            16
+          ]
+        ]
+      }
+    }
+  ]
+}

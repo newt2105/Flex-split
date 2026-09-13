@@ -1,0 +1,13 @@
+case,status,objective,runtime,rus,paths,results_dir,error
+T1-R1-LC,Optimal,7.190000549118665,0.5891292998567224,39,122,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-R1-LC/k_paths_10,
+T1-R1-RC,Optimal,5.758631211857019,0.6070016212761402,39,122,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-R1-RC/k_paths_10,
+T1-R1-HC,Optimal,5.228626175821623,0.606622276827693,39,122,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-R1-HC/k_paths_10,
+T1-F1-LC,Optimal,8.73816923837241,0.7445544279180467,49,152,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-F1-LC/k_paths_10,
+T1-F1-RC,Optimal,7.029141238012207,0.7538939961232245,49,152,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-F1-RC/k_paths_10,
+T1-F1-HC,Optimal,6.283939147601903,0.7474420550279319,49,152,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T1-F1-HC/k_paths_10,
+T2-R1-LC,Optimal,22.158516369664312,6.675843188073486,101,1010,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-R1-LC/k_paths_10,
+T2-R1-RC,Optimal,19.216436957631434,6.325973059050739,102,1020,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-R1-RC/k_paths_10,
+T2-R1-HC,Optimal,25.667889160554193,5.267884212080389,101,1010,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-R1-HC/k_paths_10,
+T2-F1-LC,Optimal,26.937629506837954,7.5194646450690925,126,1260,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-F1-LC/k_paths_10,
+T2-F1-RC,Optimal,23.166666666666668,8.345163182821125,126,1260,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-F1-RC/k_paths_10,
+T2-F1-HC,Optimal,30.633251833740793,6.5881926217116416,126,1260,/home/stu1/Code/Flex-split/FlexRanSplitProblem/results_experiments/T2-F1-HC/k_paths_10,

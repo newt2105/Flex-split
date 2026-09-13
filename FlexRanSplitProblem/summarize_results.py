@@ -10,7 +10,7 @@ from .compare_results import discover_results, summarize_solution
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
-DEFAULT_RESULTS = PACKAGE_DIR / "results_heterogeneous"
+DEFAULT_RESULTS = PACKAGE_DIR / "results"
 DEFAULT_OUTPUT = DEFAULT_RESULTS / "summary.csv"
 OUTPUT_FIELDS = ("network", "drc_count", "runtime_s")
 
