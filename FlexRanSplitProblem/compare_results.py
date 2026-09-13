@@ -26,10 +26,24 @@ OUTPUT_FIELDS = (
 
 def _network_from_path(path: Path, model: str) -> int | None:
     """Extract the CR count from a PlaceRAN or FlexibleSplit result path."""
-    text = path.as_posix()
-    pattern = r"(?:^|/)t2-(\d+)(?:/|$)" if model == "placeran" else r"(?:^|/)network_(\d+)(?:/|$)"
-    match = re.search(pattern, text, flags=re.IGNORECASE)
-    return int(match.group(1)) if match else None
+    if model == "flexible":
+        pattern = r"(?:^|/)network_(\d+)(?:/|$)"
+        match = re.search(pattern, path.as_posix(), flags=re.IGNORECASE)
+        return int(match.group(1)) if match else None
+
+    # Support both the legacy ``t2-8`` layout and the current settings-based
+    # ``T2-F1-LC-8`` / ``T1-F1-LC-51`` result directory names.
+    patterns = (
+        r"^t[12]-(?:r1|f1)-(?:lc|rc|hc)-(\d+)$",
+        r"^t[12]-(\d+)$",
+        r"^network_(\d+)$",
+    )
+    for part in path.parts:
+        for pattern in patterns:
+            match = re.match(pattern, part, flags=re.IGNORECASE)
+            if match:
+                return int(match.group(1))
+    return None
 
 
 def discover_results(root: str | Path, model: str) -> Dict[int, Path]:
