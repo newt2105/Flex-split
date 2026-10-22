@@ -246,8 +246,6 @@ cầu lọc đúng K hoặc dọn lại cây kết quả.
 - Cùng network size và RU distribution.
 - Cùng LC/RC/HC.
 - Cùng `k_paths`.
-- Không lấy nhầm dữ liệu giữa `data/` ở repo root và
-  `FlexRanSplitProblem/data/`.
 - Flex có `results/network_<N>/solution.csv`.
 - PlaceRAN có thư mục kết thúc bằng network size và chứa
   `k_paths_<K>/solution.csv`.
