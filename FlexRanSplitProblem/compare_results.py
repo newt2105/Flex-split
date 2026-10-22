@@ -46,21 +46,50 @@ def _network_from_path(path: Path, model: str) -> int | None:
     return None
 
 
-def discover_results(root: str | Path, model: str) -> Dict[int, Path]:
-    """Return one ``solution.csv`` path per discovered network size."""
+def _k_paths_from_path(path: Path) -> int | None:
+    """Extract ``k`` from a ``k_paths_<k>`` result-directory component."""
+    for part in path.parts:
+        match = re.match(r"^k_paths_(\d+)$", part, flags=re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def discover_results(
+    root: str | Path,
+    model: str,
+    k_paths: int | None = None,
+) -> Dict[int, Path]:
+    """Return one ``solution.csv`` per network, optionally filtered by ``k``.
+
+    Legacy result paths without a ``k_paths_<k>`` directory remain eligible.
+    When both tagged and untagged results exist, the exact tagged match wins.
+    """
     root = Path(root)
     if not root.is_dir():
         raise FileNotFoundError(f"Results directory not found: {root}")
+    if k_paths is not None and k_paths < 1:
+        raise ValueError("k_paths must be positive or None")
 
     discovered: Dict[int, Path] = {}
     for path in sorted(root.rglob("solution.csv")):
         network = _network_from_path(path, model)
         if network is None:
             continue
+        path_k = _k_paths_from_path(path)
+        if k_paths is not None and path_k not in {None, k_paths}:
+            continue
         if network in discovered:
+            existing = discovered[network]
+            existing_k = _k_paths_from_path(existing)
+            if k_paths is not None and existing_k is None and path_k == k_paths:
+                discovered[network] = path
+                continue
+            if k_paths is not None and existing_k == k_paths and path_k is None:
+                continue
             raise ValueError(
                 f"Multiple {model} solution.csv files found for network "
-                f"{network}: {discovered[network]} and {path}"
+                f"{network}: {existing} and {path}"
             )
         discovered[network] = path
     return discovered
@@ -133,10 +162,11 @@ def summarize_solution(path: str | Path) -> Dict[str, Any]:
 def compare_networks(
     placeran_results: str | Path = DEFAULT_PLACERAN_RESULTS,
     flexible_results: str | Path = DEFAULT_FLEX_RESULTS,
+    k_paths: int | None = None,
 ) -> List[Dict[str, Any]]:
     """Compare networks that have a solution CSV in both result trees."""
-    placeran_files = discover_results(placeran_results, "placeran")
-    flexible_files = discover_results(flexible_results, "flexible")
+    placeran_files = discover_results(placeran_results, "placeran", k_paths)
+    flexible_files = discover_results(flexible_results, "flexible", k_paths)
     common_networks = sorted(set(placeran_files).intersection(flexible_files))
     if not common_networks:
         raise ValueError("No matching network sizes were found")
@@ -175,12 +205,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--placeran", type=Path, default=DEFAULT_PLACERAN_RESULTS)
     parser.add_argument("--flexible", type=Path, default=DEFAULT_FLEX_RESULTS)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--k-paths", type=int, default=None)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    rows = compare_networks(args.placeran, args.flexible)
+    rows = compare_networks(args.placeran, args.flexible, args.k_paths)
     output = write_comparison_csv(rows, args.output)
     print(f"Compared networks: {[row['network'] for row in rows]}")
     print(f"Comparison CSV: {output.resolve()}")
