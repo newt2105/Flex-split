@@ -8,7 +8,7 @@ sánh Flex-split với PlaceRAN.
 ## So sánh theo kích thước mạng T2
 
 Đây là workflow nên dùng khi cần chạy các mạng `8, 16, 32, 64, 128, 256` và
-tạo `comparison.csv` tự động.
+tạo biểu đồ so sánh bằng `compare_results.ipynb`.
 
 Hai phương pháp phải dùng cùng:
 
@@ -185,17 +185,20 @@ Các bộ JSON chuẩn trong `PlaceRAN/model_files` và
 `FlexRanSplitProblem/model_files` hiện là bản sao tương ứng. Khi thêm hoặc sửa
 topology, phải bảo đảm cả hai phương pháp đọc cùng nội dung node/link.
 
-### Bước 4: tạo bảng so sánh
+### Bước 4: so sánh bằng notebook
 
-Sau khi cả hai phía đã có `solution.csv`, quay lại thư mục gốc:
+Sau khi cả hai phía đã có `solution.csv`, mở notebook:
+
+```text
+FlexRanSplitProblem/compare_results.ipynb
+```
+
+Có thể mở bằng VS Code/Jupyter, hoặc chạy lệnh sau từ thư mục gốc nếu môi
+trường đã cài Jupyter:
 
 ```powershell
 cd D:\Code\flexransplit
-py -m FlexRanSplitProblem.compare_results `
-  --flexible .\FlexRanSplitProblem\results `
-  --placeran .\PlaceRAN\results_pulp `
-  --k-paths 10 `
-  --output .\FlexRanSplitProblem\results\comparison.csv
+py -m jupyter notebook .\FlexRanSplitProblem\compare_results.ipynb
 ```
 
 Input thực tế của phép so sánh là:
@@ -205,28 +208,36 @@ Flex:     FlexRanSplitProblem/results/network_<N>/solution.csv
 PlaceRAN: PlaceRAN/results_pulp/T2-F1-LC-<N>/k_paths_<K>/solution.csv
 ```
 
-Output:
+Trong code cell đầu tiên, kiểm tra ba giá trị:
 
-```text
-FlexRanSplitProblem/results/comparison.csv
+```python
+FLEX_RESULTS = REPO_ROOT / 'FlexRanSplitProblem' / 'results'
+PLACERAN_RESULTS = REPO_ROOT / 'PlaceRAN' / 'results_pulp'
+K_PATHS_FILTER = 10
 ```
 
-Các cột được so sánh:
+Đặt `K_PATHS_FILTER` bằng đúng `k_paths` đã dùng ở cả hai phương pháp. Có thể
+đặt `None` để không lọc, nhưng không nên làm vậy nếu thư mục kết quả chứa nhiều
+lần chạy với các K khác nhau.
+
+Sau đó chọn **Run All**. Notebook đọc các `solution.csv`, ghép những network có
+kết quả ở cả hai phía và tạo hai biểu đồ:
 
 ```text
-network
-placeran_runtime_s
-flexible_runtime_s
-placeran_drc_count
-flexible_drc_count
+FlexRanSplitProblem/results/comparison_figures/runtime_comparison.png
+FlexRanSplitProblem/results/comparison_figures/drc_count_comparison.png
 ```
+
+Biểu đồ thứ nhất so sánh runtime; biểu đồ thứ hai so sánh số DRC khác nhau
+được sử dụng.
 
 `drc_count` là số DRC khác nhau xuất hiện trong `solution.csv`; `runtime` là
 giá trị runtime lặp lại trên các dòng NSC của lần chạy cuối cùng.
 
-Luôn truyền `--k-paths <K>` nếu `results_pulp` chứa nhiều lần chạy với các K
-khác nhau. Nếu cùng một network có nhiều `solution.csv` phù hợp, script sẽ dừng
-và yêu cầu chỉ rõ hoặc dọn lại cây kết quả.
+Nếu cần so sánh một cây kết quả khác, ví dụ heterogeneous, chỉ đổi
+`FLEX_RESULTS`, `PLACERAN_RESULTS` và `K_PATHS_FILTER` trong code cell đầu tiên.
+Nếu cùng một network có nhiều `solution.csv` phù hợp, notebook sẽ dừng và yêu
+cầu lọc đúng K hoặc dọn lại cây kết quả.
 
 
 ## Checklist trước khi so sánh
@@ -242,4 +253,4 @@ và yêu cầu chỉ rõ hoặc dọn lại cây kết quả.
   `k_paths_<K>/solution.csv`.
 - Dùng cùng solver nếu muốn so sánh runtime công bằng.
 - Không so sánh `run_summary.csv` với `solution.csv`: `run_summary.csv` chỉ là
-  tổng kết trạng thái batch, còn `compare_results.py` đọc `solution.csv`.
+  tổng kết trạng thái batch, còn `compare_results.ipynb` đọc `solution.csv`.
